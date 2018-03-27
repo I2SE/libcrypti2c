@@ -51,6 +51,9 @@ status_to_string (enum LCA_STATUS_RESPONSE rsp)
     case RSP_AWAKE:
       rsp_string = "Response Awake";
       break;
+    case RSP_WATCHDOG_EXPIRE:
+      rsp_string = "Response Watchdog Expire";
+      break;
     case RSP_COMM_ERROR:
       rsp_string = "Response Communication Error";
       break;

@@ -253,6 +253,7 @@ enum LCA_STATUS_RESPONSE
     RSP_EXECUTION_ERROR = 0x0F, /**< Command was received but can't
                                    be executed in the current state */
     RSP_AWAKE = 0x11,           /**< The device is awake */
+    RSP_WATCHDOG_EXPIRE = 0xEE,  /**< Watchdog is about to expire */
     RSP_COMM_ERROR = 0xFF,       /**< Command was not received properly
                                   */
     RSP_NAK = 0xAA,     /**< Response was NAKed and a retry should occur */
