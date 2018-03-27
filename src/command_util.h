@@ -23,23 +23,23 @@
 #include "command_adaptation.h"
 
 /* Command OPCODES */
-#define COMMAND_DERIVE_KEY      0x1C
-#define COMMAND_DEV_REV         0x30
-#define COMMAND_GEN_DIG         0x15
-#define COMMAND_HMAC            0x11
-#define COMMAND_CHECK_MAC       0x28
-#define COMMAND_LOCK            0x17
-#define COMMAND_MAC             0x08
-#define COMMAND_NONCE           0x16
 #define COMMAND_PAUSE           0x01
-#define COMMAND_RANDOM          0x1B
 #define COMMAND_READ            0x02
-#define COMMAND_UPDATE_EXTRA    0x20
+#define COMMAND_MAC             0x08
+#define COMMAND_HMAC            0x11
 #define COMMAND_WRITE           0x12
+#define COMMAND_GEN_DIG         0x15
+#define COMMAND_NONCE           0x16
+#define COMMAND_LOCK            0x17
+#define COMMAND_RANDOM          0x1B
+#define COMMAND_DERIVE_KEY      0x1C
+#define COMMAND_UPDATE_EXTRA    0x20
+#define COMMAND_CHECK_MAC       0x28
+#define COMMAND_DEV_REV         0x30
 #define COMMAND_GEN_KEY         0x40
 #define COMMAND_ECC_SIGN        0x41
-#define COMMAND_ECC_VERIFY      0x45
 #define COMMAND_ECDH            0x43
+#define COMMAND_ECC_VERIFY      0x45
 
 /* Command responses */
 #define SUCCESS_RESPONSE        0x00
@@ -68,39 +68,39 @@
 #define READ32_LENGTH           32
 
 /* Execution Times (all times in nanosecs) */
-#define DERIVE_KEY_AVG_EXEC 14000000
-#define MAC_AVG_EXEC 12000000
-#define DEV_REV_AVG_EXEC 400000
-#define GEN_DIG_AVG_EXEC 11000000
-#define HMAC_AVG_EXEC 27000000
-#define CHECK_MAC_AVG_EXEC 12000000
-#define LOCK_AVG_EXEC 5000000
-#define NONCE_AVG_EXEC 22000000
-#define PAUSE_AVG_EXEC 400000
-#define READ_AVG_EXEC 400000
-#define UPDATE_EXTRA_AVG_EXEC 8000000
-#define WRITE_AVG_EXEC 4000000
-#define RANDOM_AVG_EXEC 11000000
-#define GEN_KEY_AVG_EXEC 9000000
-#define ECC_SIGN_AVG_EXEC 33000000
-#define ECC_VERYFY_AVG_EXEC 36000000
+#define DERIVE_KEY_AVG_EXEC     14000000
+#define MAC_AVG_EXEC            12000000
+#define DEV_REV_AVG_EXEC          400000
+#define GEN_DIG_AVG_EXEC        11000000
+#define HMAC_AVG_EXEC           27000000
+#define CHECK_MAC_AVG_EXEC      12000000
+#define LOCK_AVG_EXEC            5000000
+#define NONCE_AVG_EXEC          22000000
+#define PAUSE_AVG_EXEC            400000
+#define READ_AVG_EXEC             400000
+#define UPDATE_EXTRA_AVG_EXEC    8000000
+#define WRITE_AVG_EXEC           4000000
+#define RANDOM_AVG_EXEC         11000000
+#define GEN_KEY_AVG_EXEC         9000000
+#define ECC_SIGN_AVG_EXEC       33000000
+#define ECC_VERYFY_AVG_EXEC     36000000
 
-#define DERIVE_KEY_MAX_EXEC 62000000
-#define DEV_REV_MAX_EXEC 2000000
-#define GEN_DIG_MAX_EXEC 43000000
-#define HMAC_MAX_EXEC 69000000
-#define CHECK_MAC_MAX_EXEC 38000000
-#define LOCK_MAX_EXEC 24000000
-#define MAC_MAX_EXEC 35000000
-#define NONCE_MAX_EXEC 60000000
-#define PAUSE_MAX_EXEC 2000000
-#define RANDOM_MAX_EXEC 50000000
-#define READ_MAX_EXEC 4000000
-#define UPDATE_EXTRA_MAX_EXEC 12000000
-#define WRITE_MAX_EXEC    42000000
-#define GEN_KEY_MAX_EXEC  96000000
-#define ECC_SIGN_MAX_EXEC 38000000
-#define ECC_VERIFY_MAX_EXEC 73000000
+#define DERIVE_KEY_MAX_EXEC     62000000
+#define DEV_REV_MAX_EXEC         2000000
+#define GEN_DIG_MAX_EXEC        43000000
+#define HMAC_MAX_EXEC           69000000
+#define CHECK_MAC_MAX_EXEC      38000000
+#define LOCK_MAX_EXEC           24000000
+#define MAC_MAX_EXEC            35000000
+#define NONCE_MAX_EXEC          60000000
+#define PAUSE_MAX_EXEC           2000000
+#define RANDOM_MAX_EXEC         50000000
+#define READ_MAX_EXEC            4000000
+#define UPDATE_EXTRA_MAX_EXEC   12000000
+#define WRITE_MAX_EXEC          42000000
+#define GEN_KEY_MAX_EXEC        96000000
+#define ECC_SIGN_MAX_EXEC       38000000
+#define ECC_VERIFY_MAX_EXEC     73000000
 
 struct Command_ATSHA204
 make_command (void) __attribute__ ((const));
