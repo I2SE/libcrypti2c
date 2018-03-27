@@ -381,7 +381,7 @@ lca_soft_hmac256_defaults(struct lca_octet_buffer challenge,
 int
 lca_setup (const char* bus);
 
-void
+int
 lca_acquire_bus (int fd, int addr);
 
 bool
