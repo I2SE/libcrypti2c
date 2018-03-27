@@ -641,26 +641,6 @@ lca_write32_cmd (const int fd,
                   const struct lca_octet_buffer *mac);
 
 /**
- *
- *
- * @param fd The open file descriptor
- *
- * @return True if the configuration zone is locked
- */
-bool
-lca_is_config_locked (int fd);
-
-/**
- *
- *
- * @param fd The open file descriptor
- *
- * @return True if the data zone is locked
- */
-bool
-lca_is_data_locked (int fd);
-
-/**
  * Returns the entire configuration zone.
  *
  * @param fd The open file descriptor
@@ -694,6 +674,8 @@ lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr);
 
 enum DEVICE_STATE
   {
+	STATE_UNKNOWN = -1,
+
     STATE_FACTORY = 0,            /**< Config zone, data and OTP zones
                                      are unlocked */
     STATE_INITIALIZED,            /**< Config zone locked, data and OTP
@@ -717,31 +699,34 @@ lca_get_device_state (int fd);
  *
  * @param fd The open file descriptor.
  * @param zone The zone to test.
+ * @param locked_out True if locked
  *
- * @return True if locked.
+ * @return True if successful.
  */
 bool
-lca_is_locked (int fd, enum DATA_ZONE zone);
+lca_is_locked (int fd, enum DATA_ZONE zone, bool *locked_out);
 
 /**
  * Returns true if the configuration zone is locked.
  *
  * @param fd The open file descriptor.
+ * @param locked_out True if locked
  *
- * @return true or false.
+ * @return true if successful.
  */
 bool
-lca_is_config_locked (int fd);
+lca_is_config_locked (int fd, bool *locked_out);
 
 /**
  * Returns true if the data section is locked.
  *
  * @param fd The open file descriptor.
+ * @param locked_out True if locked
  *
- * @return True if locked.
+ * @return True if successful.
  */
 bool
-lca_is_data_locked (int fd);
+lca_is_data_locked (int fd, bool *locked_out);
 
 /* Command Utilities */
 /**

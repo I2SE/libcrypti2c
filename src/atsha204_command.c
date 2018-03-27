@@ -267,11 +267,10 @@ lca_write32_cmd (const int fd,
 }
 
 bool
-lca_is_locked (int fd, enum DATA_ZONE zone)
+lca_is_locked (int fd, enum DATA_ZONE zone, bool *locked_out)
 {
   const uint8_t config_addr = 0x10;
   const uint8_t UNLOCKED = 0x55;
-  bool result = true;
   const unsigned int CONFIG_ZONE_OFFSET = 23;
   const unsigned int DATA_ZONE_OFFSET = 22;
   unsigned int offset = 0;
@@ -297,26 +296,27 @@ lca_is_locked (int fd, enum DATA_ZONE zone)
     {
       ptr = config_data.ptr + offset;
       if (UNLOCKED == *ptr)
-        result = false;
+        *locked_out = false;
       else
-        result = true;
+        *locked_out = true;
 
       lca_free_octet_buffer (config_data);
+      return true;
     }
 
-  return result;
+  return false;
 }
 
 bool
-lca_is_config_locked (int fd)
+lca_is_config_locked (int fd, bool *locked_out)
 {
-  return lca_is_locked (fd, CONFIG_ZONE);
+  return lca_is_locked (fd, CONFIG_ZONE, locked_out);
 }
 
 bool
-lca_is_data_locked (int fd)
+lca_is_data_locked (int fd, bool *locked_out)
 {
-  return lca_is_locked (fd, DATA_ZONE);
+  return lca_is_locked (fd, DATA_ZONE, locked_out);
 }
 
 
@@ -387,8 +387,11 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
   uint8_t response;
   bool result = false;
 
-  if (lca_is_locked (fd, zone))
-    return true;
+  if (lca_is_locked (fd, zone, &result))
+    {
+      if (result)
+        return true;
+    }
 
   memcpy (param2, &crc, sizeof (param2));
 
@@ -559,17 +562,18 @@ lca_get_device_state (int fd)
   bool data_locked;
   enum DEVICE_STATE state = STATE_FACTORY;
 
-  config_locked = lca_is_config_locked (fd);
-  data_locked = lca_is_data_locked (fd);
-
-  if (!config_locked && !data_locked)
+  if (!lca_is_config_locked (fd, &config_locked))
+    state = STATE_UNKNOWN;
+  else if (!lca_is_data_locked (fd, &data_locked))
+    state = STATE_UNKNOWN;
+  else if (!config_locked && !data_locked)
     state = STATE_FACTORY;
   else if (config_locked && !data_locked)
     state = STATE_INITIALIZED;
   else if (config_locked && data_locked)
     state = STATE_PERSONALIZED;
   else
-    assert (false);
+    state = STATE_UNKNOWN;
 
   return state;
 

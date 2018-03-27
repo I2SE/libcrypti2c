@@ -163,8 +163,13 @@ lca_config2bin(const char *docname, struct lca_octet_buffer *out)
 int
 lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
 {
-  if (lca_is_config_locked (fd))
-    return 0;
+  bool config_locked = false;
+
+  if (lca_is_config_locked (fd, &config_locked))
+    {
+      if (config_locked)
+        return 0;
+    }
 
   assert (0 == cz.len % 4);
   assert (NULL != cz.ptr);
