@@ -18,7 +18,6 @@
 AC_INIT([cryptoauth], [0.4.0], [bugs@cryptotronix.com], [libcryptoauth],
         [https://www.github.com/cryptotronix/libcryptoauth])
 AC_PREREQ([2.59])
-AC_USE_SYSTEM_EXTENSIONS
 AM_INIT_AUTOMAKE([1.10 -Wall no-define])
 AC_CONFIG_MACRO_DIR([m4])
 PKG_PROG_PKG_CONFIG
@@ -43,9 +42,6 @@ AC_PROG_CC
 AC_PROG_CC_C_O
 AM_PROG_CC_C_O
 LT_INIT([static])
-gl_EARLY
-gl_INIT
-AC_PROG_MKDIR_P
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -68,7 +64,7 @@ AC_ARG_ENABLE([deb],
         [enable_deb=no])
 AM_CONDITIONAL([BUILDING_DEB], [$TEST "x$enable_deb" = xyes])
 
-AC_CONFIG_FILES([Makefile test/Makefile lib/Makefile
+AC_CONFIG_FILES([Makefile test/Makefile
                  cryptoauth.pc:cryptoauth.pc.in])
 AC_OUTPUT
 
