@@ -108,45 +108,28 @@ lca_send_and_receive (int fd,
 {
 #ifndef USE_KERNEL
   struct timespec tim_rem;
-  enum LCA_STATUS_RESPONSE rsp = RSP_AWAKE;
-  const unsigned int NUM_RETRIES = 10;
-  unsigned int x = 0;
+  enum LCA_STATUS_RESPONSE rsp = RSP_COMM_ERROR;
   ssize_t result = 0;
 
   assert (NULL != send_buf);
   assert (NULL != recv_buf);
   assert (NULL != wait_time);
 
-  /* Send the data at first.  During a read, if the device responds
-  with an "I'm Awake" flag, we've lost synchronization, so send the
-  data again in that case only.  Arbitrarily retry this procedure
-  NUM_RETRIES times */
-  for (x=0; x < NUM_RETRIES && rsp == RSP_AWAKE; x++)
+  lca_print_hex_string ("Sending", send_buf, send_buf_len);
+
+  result = lca_write (fd, send_buf, send_buf_len);
+
+  if (result > 1)
     {
-      lca_print_hex_string ("Sending", send_buf, send_buf_len);
-
-      result = lca_write (fd,
-                           send_buf,
-                           send_buf_len);
-
-      if (result > 1)
-        {
-          do
-            {
-              nanosleep (wait_time , &tim_rem);
-            }
-          while ((rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len))
-                 == RSP_NAK);
-          LCA_LOG (DEBUG, "Command Response: %s", status_to_string (rsp));
-        }
-      else
-        {
-          perror ("Send failed\n");
-          exit (1);
-        }
-
-
+      nanosleep (wait_time , &tim_rem);
+      rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len);
+      LCA_LOG (DEBUG, "Command Response: %s", status_to_string (rsp));
     }
+  else
+    {
+      LCA_LOG (DEBUG, "Write failed: %d\n", result);
+    }
+
 #else
   enum LCA_STATUS_RESPONSE rsp = RSP_COMM_ERROR;
   ssize_t result = 0;
