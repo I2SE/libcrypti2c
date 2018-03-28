@@ -35,7 +35,7 @@ START_TEST(test_xml_parse)
 
     ck_assert (NULL != result.ptr);
 
-    printf ("C: %p, l %d\n", result.ptr, result.len);
+    printf ("C: %p, l %u\n", result.ptr, result.len);
 
     lca_set_log_level(DEBUG);
     lca_print_hex_string ("Config zone", result.ptr, result.len);
