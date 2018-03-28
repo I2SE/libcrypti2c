@@ -194,8 +194,17 @@ lca_atmel_setup(const char *bus, unsigned int addr)
 {
 #ifndef USE_KERNEL
     int fd = lca_setup(bus);
+    int rc;
 
-    lca_acquire_bus(fd, addr);
+    if (fd < 0)
+      return fd;
+
+    rc = lca_acquire_bus(fd, addr);
+    if (rc < 0)
+      {
+        close(fd);
+        return rc;
+      }
 
     lca_wakeup(fd);
 #else
