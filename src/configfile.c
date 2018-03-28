@@ -32,22 +32,6 @@
 #include "../libcryptoauth.h"
 
 
-static unsigned char
-c2h(char c)
-{
-    if (c >= 'A')
-        return (c - 'A' + 10);
-    else
-        return (c - '0');
-}
-
-static unsigned char
-a2b(char *ptr)
-{
-  assert (NULL != ptr);
-  return c2h( *ptr )*16 + c2h( *(ptr+1) );
-}
-
 static struct lca_octet_buffer
 parse_body (xmlDocPtr doc, xmlNodePtr cur) {
 
@@ -56,7 +40,8 @@ parse_body (xmlDocPtr doc, xmlNodePtr cur) {
   cur = cur->xmlChildrenNode;
   int x = 0;
   const char tok[] = " ";
-  char * token;
+  char * token, * end;
+  unsigned long val;
 
 
   struct lca_octet_buffer result = {0,0};
@@ -76,7 +61,15 @@ parse_body (xmlDocPtr doc, xmlNodePtr cur) {
             {
               configzone = realloc (configzone, x + 1);
               assert (NULL != configzone);
-              configzone[x] = a2b(token);
+              val = strtoul(token, &end, 16);
+
+              if (val > 0xFF)
+                goto OUT;
+
+              if (*end != '\0')
+                goto OUT;
+
+              configzone[x] = val;
               x+=1;
 
               // get the next token
@@ -93,6 +86,13 @@ parse_body (xmlDocPtr doc, xmlNodePtr cur) {
 
   result.ptr = configzone;
   result.len = x;
+
+  return result;
+
+ OUT:
+  free(configzone);
+  xmlFree(key);
+  free(key_cp);
 
   return result;
 }
