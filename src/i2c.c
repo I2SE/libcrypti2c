@@ -238,7 +238,10 @@ lca_setup_no_wake (const char* bus, int addr)
 
   int rc = lca_acquire_bus(fd, addr);
   if (rc < 0)
-    return rc;
+    {
+      close(fd);
+      return rc;
+    }
 #else
   int fd = open (bus, O_RDWR);
 #endif
