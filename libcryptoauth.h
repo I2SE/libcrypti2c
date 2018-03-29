@@ -557,6 +557,24 @@ struct lca_octet_buffer
 lca_ecdh (int fd, uint8_t slot,
           struct lca_octet_buffer x, struct lca_octet_buffer y);
 
+/**
+ * Write ECC private key to the device. The specified slot must configured
+ * as a secret ECC private key and the configuration zone must be locked.
+ *
+ * @param fd The open file descriptor.
+ * @param slot The slot to write to.
+ * @param buf The buffer to write, passed by value.  Buf.ptr should be
+ * a valid pointer to the data and buf.len must be smaller or equal 32.
+ * @param mac An optional mac.
+ *
+ * @return True if successful.
+ */
+bool
+lca_priv_write_cmd (const int fd,
+                    const uint8_t slot,
+                    const struct lca_octet_buffer buf,
+                    const struct lca_octet_buffer *mac);
+
 /* ATSHA204 Commands */
 
 enum DATA_ZONE

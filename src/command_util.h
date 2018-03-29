@@ -40,6 +40,7 @@
 #define COMMAND_ECC_SIGN        0x41
 #define COMMAND_ECDH            0x43
 #define COMMAND_ECC_VERIFY      0x45
+#define COMMAND_PRIV_WRITE      0x46
 
 /* Command responses */
 #define SUCCESS_RESPONSE        0x00
@@ -84,6 +85,7 @@
 #define GEN_KEY_AVG_EXEC         9000000
 #define ECC_SIGN_AVG_EXEC       33000000
 #define ECC_VERYFY_AVG_EXEC     36000000
+#define PRIV_WRITE_AVG_EXEC     12000000
 
 #define DERIVE_KEY_MAX_EXEC     62000000
 #define DEV_REV_MAX_EXEC         2000000
@@ -101,6 +103,7 @@
 #define GEN_KEY_MAX_EXEC        96000000
 #define ECC_SIGN_MAX_EXEC       38000000
 #define ECC_VERIFY_MAX_EXEC     73000000
+#define PRIV_WRITE_MAX_EXEC     48000000
 
 struct Command_ATSHA204
 make_command (void) __attribute__ ((const));

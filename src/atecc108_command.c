@@ -208,3 +208,80 @@ lca_ecdh (int fd, uint8_t slot,
 
   return shared_secret;
 }
+
+struct Command_ATSHA204
+lca_build_priv_write_cmd (const uint8_t slot,
+                          const struct lca_octet_buffer buf,
+                          const struct lca_octet_buffer *mac)
+{
+  assert (slot <= 15);
+  assert (NULL != buf.ptr);
+  assert (buf.len <= 32);
+
+  if (NULL != mac)
+    {
+      assert (NULL != mac->ptr);
+      assert (32 == mac->len);
+    }
+
+  uint8_t param2[2] = {0};
+  uint8_t param1 = 0;
+
+  struct lca_octet_buffer data = {0,0};
+
+  /* The first four bytes should be zero */
+  if (NULL != mac)
+	data = lca_make_buffer (4 + 32 + mac->len);
+  else
+    data = lca_make_buffer (4 + 32 + 32);
+
+  memcpy (4 + data.ptr, buf.ptr, buf.len);
+
+  /* TODO MAC generation */
+
+  if (NULL != mac && mac->len > 0)
+    memcpy (4 + data.ptr + 32, mac->ptr, mac->len);
+
+  /* The input data is encrypted using TempKey */
+  if (NULL != mac)
+	  param1 |= 0b01000000;
+
+  param2[0] = slot;
+
+  struct Command_ATSHA204 c =
+    build_command (COMMAND_PRIV_WRITE,
+                   param1,
+                   param2,
+                   data.ptr, data.len,
+                   0, PRIV_WRITE_AVG_EXEC);
+
+  return c;
+}
+
+bool
+lca_priv_write_cmd (const int fd,
+                    const uint8_t slot,
+                    const struct lca_octet_buffer buf,
+                    const struct lca_octet_buffer *mac)
+{
+
+  bool status = false;
+  uint8_t recv = 0;
+
+  struct Command_ATSHA204 c =
+    lca_build_priv_write_cmd (slot,
+                              buf,
+                              mac);
+
+  if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
+  {
+    LCA_LOG (DEBUG, "Priv Write successful.");
+    if (0 == (int) recv)
+      status = true;
+  }
+
+  if (NULL != c.data)
+    free (c.data);
+
+  return status;
+}

@@ -176,6 +176,9 @@ lca_print_command (struct Command_ATSHA204 *c)
     case COMMAND_ECDH:
       opcode = "Command ECDH";
       break;
+    case COMMAND_PRIV_WRITE:
+      opcode = "Command Priv Write";
+      break;
     default:
       assert (false);
     }
