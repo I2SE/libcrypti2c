@@ -127,9 +127,10 @@ lca_config2bin(const char *docname, struct lca_octet_buffer *out)
       goto FREE;
     }
 
-  if (xmlStrcmp(cur->name, (const xmlChar *) "ECC108Content.01"))
+  if (xmlStrcmp(cur->name, (const xmlChar *) "ECC108Content.01") &&
+	  xmlStrcmp(cur->name, (const xmlChar *) "ECC508Content.01"))
     {
-      fprintf(stderr,"document of the wrong type, root node != ECC108Content.01");
+      fprintf(stderr,"document of unknown type, root node = <%s>\n", cur->name);
       rc = -4;
       goto FREE;
     }
