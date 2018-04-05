@@ -47,4 +47,10 @@ calc_nonce(struct lca_octet_buffer seed,
            struct lca_octet_buffer rand_out,
            uint8_t mode);
 
+struct lca_octet_buffer
+calc_digest(struct lca_octet_buffer data,
+		    uint8_t zone,
+			uint16_t key_id,
+			struct lca_octet_buffer tempkey);
+
 #endif /* HASH_H */

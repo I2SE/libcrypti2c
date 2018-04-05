@@ -215,6 +215,129 @@ calc_nonce(struct lca_octet_buffer seed,
   return digest;
 }
 
+struct lca_octet_buffer
+calc_digest(struct lca_octet_buffer data,
+		    uint8_t zone,
+			uint16_t key_id,
+			struct lca_octet_buffer tempkey)
+{
+  const uint8_t opcode = {0x15};
+  const uint8_t sn = 0xEE;
+  const uint8_t sn2[] ={0x01, 0x23};
+  const uint8_t lsb_param2 = key_id & 0xFF;
+
+  unsigned int len;
+
+  struct lca_octet_buffer zeros = lca_make_buffer (32);
+
+  switch (zone)
+    {
+      case CONFIG_ZONE:
+      case OTP_ZONE:
+      case DATA_ZONE:
+        assert (NULL != data.ptr); assert (32 == data.len);
+        // data + opcode + param1 + param2 + SN[8] + SN[0:1] + zeros + tempkey
+        len = data.len + sizeof(opcode) + sizeof(zone) + sizeof(key_id) + sizeof(sn) + sizeof(sn2) + 25 + tempkey.len;
+        break;
+      case COUNTER_ZONE:
+        assert (NULL != data.ptr); assert (4 == data.len);
+        // zeros + opcode + param1 + param2 + SN[8] + SN[0:1] + zero + counter[key_id] + zeros + tempkey
+        len = 32 + sizeof(opcode) + sizeof(zone) + sizeof(key_id) + sizeof(sn) + sizeof(sn2) + 1 + data.len + 20 + tempkey.len;
+        break;
+      case KEY_CONFIG_ZONE:
+        // tempkey + opcode + mode + param2 + SN[8] + SN[0:1] + zero + slot_config[key_id] + key_config[key_id] + slot_locked:key_id + zeros
+        // FIXME
+        assert(false);
+        break;
+      case SHARED_NONCE_ZONE:
+        assert (NULL != data.ptr); assert (32 == data.len);
+        // data + opcode + mode + LSB of key_id + zero + SN[8] + SN[0:1] + zeros + tempkey
+        len = data.len + sizeof(opcode) + sizeof(zone) + sizeof(key_id) + sizeof(sn) + sizeof(sn2) + 25 + tempkey.len;
+        break;
+      default:
+        assert(false);
+        break;
+    }
+
+  uint8_t *buf = lca_malloc_wipe(len);
+
+  unsigned int offset = 0;
+
+  switch (zone)
+    {
+      case CONFIG_ZONE:
+      case OTP_ZONE:
+      case DATA_ZONE:
+        offset = copy_over (buf, data.ptr, data.len, offset);
+        offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+        offset = copy_over (buf, &zone, sizeof(zone), offset);
+        offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
+        offset = copy_over (buf, zeros.ptr, 1, offset);
+        offset = copy_over (buf, &sn, sizeof(sn), offset);
+        offset = copy_over (buf, sn2, sizeof(sn2), offset);
+        offset = copy_over (buf, zeros.ptr, 25, offset);
+        offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
+        break;
+      case COUNTER_ZONE:
+        len = 32 + sizeof(opcode) + sizeof(zone) + sizeof(key_id) + sizeof(sn) + sizeof(sn2) + 1 + data.len + 20 + tempkey.len;
+        offset = copy_over (buf, zeros.ptr, 32, offset);
+        offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+        offset = copy_over (buf, &zone, sizeof(zone), offset);
+        offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
+        offset = copy_over (buf, zeros.ptr, 1, offset);
+        offset = copy_over (buf, &sn, sizeof(sn), offset);
+        offset = copy_over (buf, sn2, sizeof(sn2), offset);
+        offset = copy_over (buf, zeros.ptr, 1, offset);
+        offset = copy_over (buf, data.ptr, data.len, offset);
+        offset = copy_over (buf, zeros.ptr, 20, offset);
+        offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
+        break;
+      case KEY_CONFIG_ZONE:
+        // tempkey + opcode + mode + param2 + SN[8] + SN[0:1] + zero + slot_config[key_id] + key_config[key_id] + slot_locked:key_id + zeros
+        // FIXME
+        break;
+      case SHARED_NONCE_ZONE:
+        if (key_id & (1 << 15))
+          {
+            offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
+            offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+            offset = copy_over (buf, &zone, sizeof(zone), offset);
+            offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
+            offset = copy_over (buf, zeros.ptr, 1, offset);
+            offset = copy_over (buf, &sn, sizeof(sn), offset);
+            offset = copy_over (buf, sn2, sizeof(sn2), offset);
+            offset = copy_over (buf, zeros.ptr, 25, offset);
+            offset = copy_over (buf, data.ptr, data.len, offset);
+          }
+        else
+          {
+            offset = copy_over (buf, data.ptr, data.len, offset);
+            offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+            offset = copy_over (buf, &zone, sizeof(zone), offset);
+            offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
+            offset = copy_over (buf, zeros.ptr, 1, offset);
+            offset = copy_over (buf, &sn, sizeof(sn), offset);
+            offset = copy_over (buf, sn2, sizeof(sn2), offset);
+            offset = copy_over (buf, zeros.ptr, 25, offset);
+            offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
+          }
+
+        break;
+    }
+
+  lca_print_hex_string("Data to hash", buf, len);
+  struct lca_octet_buffer data_to_hash = {buf, len};
+  struct lca_octet_buffer digest;
+  digest = lca_sha256_buffer (data_to_hash);
+
+  lca_print_hex_string ("Result hash", digest.ptr, digest.len);
+
+  lca_free_octet_buffer (zeros);
+  free(buf);
+
+  return digest;
+}
+
 bool
 lca_verify_hash_defaults (struct lca_octet_buffer challenge,
                            struct lca_octet_buffer challenge_rsp,

@@ -598,7 +598,10 @@ enum DATA_ZONE
   {
     CONFIG_ZONE = 0,
     OTP_ZONE = 1,
-    DATA_ZONE = 2
+    DATA_ZONE = 2,
+    SHARED_NONCE_ZONE = 3,
+    COUNTER_ZONE = 4,
+    KEY_CONFIG_ZONE = 5
   };
 
 /* Random Commands */
