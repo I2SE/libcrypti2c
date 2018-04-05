@@ -109,6 +109,16 @@ struct lca_octet_buffer
 lca_make_buffer(unsigned int len);
 
 /**
+ * Created a malloc'd and randomized octet buffer.
+ *
+ * @param len The length of the desired buffer.
+ *
+ * @return A malloc'd and randomized octet buffer.
+ */
+struct lca_octet_buffer
+lca_make_random_buffer(unsigned int len);
+
+/**
  * Frees and clears an octet_buffer
  *
  * @param buf The malloc'ed octet buffer

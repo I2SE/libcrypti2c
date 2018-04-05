@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include "util.h"
 #include "../libcryptoauth.h"
@@ -76,6 +77,41 @@ lca_make_buffer(unsigned int len)
   return b;
 }
 
+struct lca_octet_buffer
+lca_make_random_buffer(unsigned int len)
+{
+  struct lca_octet_buffer b = {0,0};
+  int fd = open("/dev/urandom", O_RDONLY);
+  size_t num = 0;
+  int rc = -1;
+
+  if (fd < 0)
+    {
+      return b;
+    }
+
+  b.ptr = malloc(len);
+
+  while (num < len)
+    {
+      rc = read(fd, b.ptr + num, len - num);
+      if (rc < 0)
+        {
+          close(fd);
+          free(b.ptr);
+          b.ptr = NULL;
+          return b;
+        }
+      else
+        {
+          num += rc;
+        }
+    }
+
+  close(fd);
+  b.len = len;
+  return b;
+}
 
 void
 lca_free_octet_buffer(struct lca_octet_buffer buf)
