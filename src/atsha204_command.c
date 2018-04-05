@@ -669,3 +669,62 @@ load_nonce (int fd, struct lca_octet_buffer data)
     return true;
 
 }
+
+bool
+lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_octet_buffer *other_data)
+{
+  uint8_t result = 0xFF;
+
+  uint8_t param2[2] = {0};
+
+  param2[0] = key_id & 0xFF;
+  param2[1] = key_id >> 8;
+
+  switch (zone)
+    {
+      case CONFIG_ZONE:
+      case OTP_ZONE:
+      case DATA_ZONE:
+        // data + opcode + param1 + param2 + SN[8] + SN[0:1] + zeros + tempkey
+        assert(NULL == other_data);
+        break;
+      case COUNTER_ZONE:
+        // zeros + opcode + param1 + param2 + SN[8] + SN[0:1] + zero + counter[key_id] + zeros + tempkey
+        assert(NULL == other_data);
+        break;
+      case KEY_CONFIG_ZONE:
+        // tempkey + opcode + mode + param2 + SN[8] + SN[0:1] + zero + slot_config[key_id] + key_config[key_id] + slot_locked:key_id + zeros
+        assert(false);
+        break;
+      case SHARED_NONCE_ZONE:
+        // other_data + opcode + mode + LSB of key_id + zero + SN[8] + SN[0:1] + zeros + tempkey
+        assert(other_data && other_data->len == 32);
+        break;
+      default:
+        assert(false);
+        break;
+    }
+
+  struct Command_ATSHA204 c = make_command ();
+
+  set_opcode (&c, COMMAND_GEN_DIG);
+  set_param1 (&c, zone);
+  set_param2 (&c, param2);
+
+  if (other_data)
+    set_data (&c, other_data->ptr, other_data->len);
+
+  set_execution_time (&c, 0, GEN_DIG_AVG_EXEC);
+
+  if (RSP_SUCCESS == lca_process_command (fd, &c, &result, sizeof(result)))
+    {
+      LCA_LOG (DEBUG, "GenDig success");
+      return result == 0;
+    }
+  else
+    {
+      LCA_LOG (DEBUG, "GenDig failure");
+    }
+
+  return false;
+}

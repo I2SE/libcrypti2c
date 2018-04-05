@@ -710,6 +710,22 @@ get_otp_zone (int fd);
 struct Command_ATSHA204
 lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr);
 
+/**
+ * Generate SHA256 and store it into TempKey
+ *
+ * @param fd The open file descriptor.
+ * @param zone The zone which provides the input data
+ * @param key_id The key ID you want to use for input data.
+ * @param other_data Optional other data for input
+ *
+ * @return True if successful.
+ */
+bool
+lca_gen_digest (int fd,
+                const enum DATA_ZONE zone,
+                uint16_t key_id,
+                struct lca_octet_buffer *other_data);
+
 enum DEVICE_STATE
   {
 	STATE_UNKNOWN = -1,
