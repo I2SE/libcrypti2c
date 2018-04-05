@@ -53,4 +53,10 @@ calc_digest(struct lca_octet_buffer data,
 			uint16_t key_id,
 			struct lca_octet_buffer tempkey);
 
+struct lca_octet_buffer
+calc_priv_write_mac(struct lca_octet_buffer data,
+                    uint8_t zone,
+                    uint16_t key_id,
+                    struct lca_octet_buffer tempkey);
+
 #endif /* HASH_H */
