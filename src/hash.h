@@ -42,4 +42,9 @@ struct lca_octet_buffer
 hmac_buffer (struct lca_octet_buffer data_to_hash,
              struct lca_octet_buffer key);
 
+struct lca_octet_buffer
+calc_nonce(struct lca_octet_buffer seed,
+           struct lca_octet_buffer rand_out,
+           uint8_t mode);
+
 #endif /* HASH_H */

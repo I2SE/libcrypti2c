@@ -166,6 +166,55 @@ perform_hash(struct lca_octet_buffer challenge,
   return digest;
 }
 
+struct lca_octet_buffer
+calc_nonce(struct lca_octet_buffer seed,
+		   struct lca_octet_buffer rand_out,
+		   uint8_t mode)
+{
+
+  assert (NULL != rand_out.ptr);
+  assert (32 == rand_out.len);
+  assert (NULL != seed.ptr);
+  assert (20 == seed.len || 32 == seed.len);
+
+  const uint8_t opcode = {0x16};
+  const uint8_t lsb_param2 = {0x00};
+
+  unsigned int len = rand_out.len + seed.len + sizeof(opcode) + sizeof(mode) + sizeof(lsb_param2);
+
+  uint8_t *buf = lca_malloc_wipe(len);
+
+  unsigned int offset = 0;
+
+  switch (mode)
+    {
+      case SEED_UPDATE_MODE:
+      case NO_SEED_UPDATE_MODE:
+      case PASSTHROUGH_MODE:
+        break;
+      default:
+    	assert(false);
+    	break;
+    }
+
+  offset = copy_over (buf, rand_out.ptr, rand_out.len, offset);
+  offset = copy_over (buf, seed.ptr, seed.len, offset);
+  offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+  offset = copy_over (buf, &mode, sizeof(mode), offset);
+  offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
+
+  lca_print_hex_string("Data to hash", buf, len);
+  struct lca_octet_buffer data_to_hash = {buf, len};
+  struct lca_octet_buffer digest;
+  digest = lca_sha256_buffer (data_to_hash);
+
+  lca_print_hex_string ("Result hash", digest.ptr, digest.len);
+
+  free(buf);
+
+  return digest;
+}
+
 bool
 lca_verify_hash_defaults (struct lca_octet_buffer challenge,
                            struct lca_octet_buffer challenge_rsp,

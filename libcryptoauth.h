@@ -567,6 +567,13 @@ struct lca_octet_buffer
 lca_ecdh (int fd, uint8_t slot,
           struct lca_octet_buffer x, struct lca_octet_buffer y);
 
+enum LCA_NONCE_MODE
+  {
+    SEED_UPDATE_MODE = 0x00,
+    NO_SEED_UPDATE_MODE = 0x01,
+    PASSTHROUGH_MODE = 0x03,
+  };
+
 /**
  * Write ECC private key to the device. The specified slot must configured
  * as a secret ECC private key and the configuration zone must be locked.
