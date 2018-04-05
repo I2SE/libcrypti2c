@@ -579,18 +579,22 @@ enum LCA_NONCE_MODE
  * as a secret ECC private key and the configuration zone must be locked.
  *
  * @param fd The open file descriptor.
- * @param slot The slot to write to.
- * @param buf The buffer to write, passed by value.  Buf.ptr should be
- * a valid pointer to the data and buf.len must be smaller or equal 32.
- * @param mac An optional mac.
+ * @param encrypt True if the priv_key should be encrypted
+ * @param slot The slot to write the priv_key to.
+ * @param priv_key The private key as plaintext, passed by value. priv_key.ptr
+ * should be a valid pointer to the data and priv_key.len must be smaller or equal 32.
+ * @param write_key_slot The slot of the write key (only required for encryption)
+ * @param write_key The write key (only required for encryption)
  *
  * @return True if successful.
  */
 bool
 lca_priv_write_cmd (const int fd,
+                    const bool encrypt,
                     const uint8_t slot,
-                    const struct lca_octet_buffer buf,
-                    const struct lca_octet_buffer *mac);
+                    const struct lca_octet_buffer priv_key,
+                    const uint8_t write_key_slot,
+                    const struct lca_octet_buffer write_key);
 
 /* ATSHA204 Commands */
 

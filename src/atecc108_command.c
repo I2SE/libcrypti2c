@@ -26,6 +26,7 @@
 #include <string.h>
 #include "../libcryptoauth.h"
 #include "command_util.h"
+#include "hash.h"
 
 
 struct lca_octet_buffer
@@ -209,69 +210,100 @@ lca_ecdh (int fd, uint8_t slot,
   return shared_secret;
 }
 
-struct Command_ATSHA204
-lca_build_priv_write_cmd (const uint8_t slot,
-                          const struct lca_octet_buffer buf,
-                          const struct lca_octet_buffer *mac)
+bool
+lca_priv_write_cmd (const int fd,
+                    const bool encrypt,
+                    const uint8_t slot,
+                    const struct lca_octet_buffer priv_key,
+		            const uint8_t write_key_slot,
+		            const struct lca_octet_buffer write_key)
 {
-  assert (slot <= 15);
-  assert (NULL != buf.ptr);
-  assert (buf.len <= 32);
 
-  if (NULL != mac)
-    {
-      assert (NULL != mac->ptr);
-      assert (32 == mac->len);
-    }
+  struct lca_octet_buffer data = {0,0};
+  bool status = false;
+  uint8_t recv = 0;
+  int i;
 
   uint8_t param2[2] = {0};
   uint8_t param1 = 0;
 
-  struct lca_octet_buffer data = {0,0};
-
-  /* The first four bytes should be zero */
-  if (NULL != mac)
-	data = lca_make_buffer (4 + 32 + mac->len);
-  else
-    data = lca_make_buffer (4 + 32 + 32);
-
-  memcpy (4 + data.ptr, buf.ptr, buf.len);
-
-  /* TODO MAC generation */
-
-  if (NULL != mac && mac->len > 0)
-    memcpy (4 + data.ptr + 32, mac->ptr, mac->len);
+  assert (slot <= 15);
+  assert (NULL != priv_key.ptr);
+  assert (priv_key.len <= 32);
 
   /* The input data is encrypted using TempKey */
-  if (NULL != mac)
-	  param1 |= 0b01000000;
+  if (encrypt)
+    param1 |= 0b01000000;
 
   param2[0] = slot;
 
+  data = lca_make_buffer (36 + 32);
+
+  if (encrypt)
+    {
+      struct lca_octet_buffer tempkey = {0,0};
+      struct lca_octet_buffer rand_out = {0,0};
+      struct lca_octet_buffer session_key;
+      struct lca_octet_buffer seed;
+      struct lca_octet_buffer mac;
+
+      assert (write_key_slot <= 15);
+      assert (NULL != write_key.ptr);
+      assert (32 == write_key.len);
+
+      seed = lca_make_random_buffer (20);
+
+      rand_out = gen_nonce (fd, seed);
+
+      // calc tempkey
+      tempkey = calc_nonce(seed, rand_out, SEED_UPDATE_MODE);
+
+      // send GenDig command
+      if (lca_gen_digest (fd, DATA_ZONE, write_key_slot, NULL))
+        return false;
+
+      // re-calc tempkey
+      tempkey = calc_digest(write_key, DATA_ZONE, write_key_slot, tempkey);
+
+      // calc cipher text
+      for (i = 0; i < 4; i++)
+        {
+          data.ptr[i] = 0x00 ^ tempkey.ptr[i];
+        }
+
+      for (i = 0; i < priv_key.len - 4; i++)
+        {
+          data.ptr[i+4] = priv_key.ptr[i] ^ tempkey.ptr[i+4];
+        }
+
+      session_key = lca_sha256_buffer (tempkey);
+
+      for (i = 0; i < 4; i++)
+        {
+          data.ptr[i+32] = priv_key.ptr[i+32] ^ session_key.ptr[i];
+        }
+
+      // calc MAC
+      mac = calc_priv_write_mac(priv_key, param1, slot, tempkey);
+      memcpy (data.ptr + 36, mac.ptr, mac.len);
+
+      lca_free_octet_buffer(seed);
+      lca_free_octet_buffer(session_key);
+      lca_free_octet_buffer(rand_out);
+      lca_free_octet_buffer(tempkey);
+      lca_free_octet_buffer(mac);
+    }
+  else
+    {
+      memcpy (4 + data.ptr, priv_key.ptr, priv_key.len);
+    }
+
   struct Command_ATSHA204 c =
-    build_command (COMMAND_PRIV_WRITE,
-                   param1,
-                   param2,
-                   data.ptr, data.len,
-                   0, PRIV_WRITE_AVG_EXEC);
-
-  return c;
-}
-
-bool
-lca_priv_write_cmd (const int fd,
-                    const uint8_t slot,
-                    const struct lca_octet_buffer buf,
-                    const struct lca_octet_buffer *mac)
-{
-
-  bool status = false;
-  uint8_t recv = 0;
-
-  struct Command_ATSHA204 c =
-    lca_build_priv_write_cmd (slot,
-                              buf,
-                              mac);
+      build_command (COMMAND_PRIV_WRITE,
+                     param1,
+                     param2,
+                     data.ptr, data.len,
+                     0, PRIV_WRITE_AVG_EXEC);
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
   {
