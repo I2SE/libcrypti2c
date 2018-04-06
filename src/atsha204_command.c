@@ -40,7 +40,7 @@ lca_build_random_cmd (bool update_seed)
                    param1,
                    param2,
                    NULL, 0,
-                   0, RANDOM_AVG_EXEC);
+                   0, RANDOM_MAX_EXEC);
 
   return c;
 }
@@ -85,7 +85,7 @@ lca_build_read4_cmd (enum DATA_ZONE zone, uint8_t addr)
                    param1,
                    param2,
                    NULL, 0,
-                   0, READ_AVG_EXEC);
+                   0, READ_MAX_EXEC);
 
   return c;
 
@@ -127,7 +127,7 @@ lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr)
                    param1,
                    param2,
                    NULL, 0,
-                   0, READ_AVG_EXEC);
+                   0, READ_MAX_EXEC);
 
   return c;
 
@@ -167,7 +167,7 @@ lca_build_write4_cmd (enum DATA_ZONE zone, uint8_t addr, uint32_t buf)
                    param1,
                    param2,
                    (uint8_t *)&buf, sizeof (buf),
-                   0, WRITE_AVG_EXEC);
+                   0, WRITE_MAX_EXEC);
 
   return c;
 
@@ -230,7 +230,7 @@ lca_build_write32_cmd (const enum DATA_ZONE zone,
                    param1,
                    param2,
                    data.ptr, data.len,
-                   0, WRITE_AVG_EXEC);
+                   0, WRITE_MAX_EXEC);
 
   return c;
 
@@ -421,7 +421,7 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
   set_param1 (&c, param1);
   set_param2 (&c, param2);
   set_data (&c, NULL, 0);
-  set_execution_time (&c, 0, LOCK_AVG_EXEC);
+  set_execution_time (&c, 0, LOCK_MAX_EXEC);
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &response, sizeof (response)))
     {
@@ -617,7 +617,7 @@ gen_nonce (int fd, struct lca_octet_buffer data)
   set_param1 (&c, param1);
   set_param2 (&c, param2);
   set_data (&c, data.ptr, data.len);
-  set_execution_time (&c, 0, NONCE_AVG_EXEC);
+  set_execution_time (&c, 0, NONCE_MAX_EXEC);
 
   if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, buf.len))
     {
@@ -714,7 +714,7 @@ lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_o
   if (other_data)
     set_data (&c, other_data->ptr, other_data->len);
 
-  set_execution_time (&c, 0, GEN_DIG_AVG_EXEC);
+  set_execution_time (&c, 0, GEN_DIG_MAX_EXEC);
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &result, sizeof(result)))
     {

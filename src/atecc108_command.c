@@ -57,7 +57,7 @@ lca_gen_ecc_key (int fd, uint8_t key_id, bool private)
   set_param1 (&c, param1);
   set_param2 (&c, param2);
   set_data (&c, NULL, 0);
-  set_execution_time (&c, 0, GEN_KEY_AVG_EXEC);
+  set_execution_time (&c, 0, GEN_KEY_MAX_EXEC);
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, pub_key.ptr, pub_key.len))
     {
@@ -303,7 +303,7 @@ lca_priv_write_cmd (const int fd,
                      param1,
                      param2,
                      data.ptr, data.len,
-                     0, PRIV_WRITE_AVG_EXEC);
+                     0, PRIV_WRITE_MAX_EXEC);
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
   {
