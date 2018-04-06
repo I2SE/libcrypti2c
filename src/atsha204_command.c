@@ -335,7 +335,12 @@ get_config_zone (int fd)
   while (word < NUM_OF_WORDS)
     {
       addr = word * 4;
-      read4 (fd, CONFIG_ZONE, word, (uint32_t*)(write_loc+addr));
+      if (false == read4 (fd, CONFIG_ZONE, word, (uint32_t*)(write_loc+addr)))
+        {
+    	  free (buf.ptr);
+    	  buf.ptr = NULL;
+    	  return buf;
+        }
       word++;
     }
 
