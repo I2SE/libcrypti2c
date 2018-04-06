@@ -80,7 +80,7 @@
 #define PAUSE_AVG_EXEC            400000
 #define READ_AVG_EXEC             400000
 #define UPDATE_EXTRA_AVG_EXEC    8000000
-#define WRITE_AVG_EXEC           4000000
+#define WRITE_AVG_EXEC           7000000
 #define RANDOM_AVG_EXEC         11000000
 #define GEN_KEY_AVG_EXEC         9000000
 #define ECC_SIGN_AVG_EXEC       33000000
