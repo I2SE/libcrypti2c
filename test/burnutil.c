@@ -4,7 +4,7 @@
 #include "../libcryptoauth.h"
 
 const char *argp_program_version =
-  "burnutil 0.1";
+  "burnutil 0.2";
 const char *argp_program_bug_address =
   "<bugs@cryptotronix.com>";
 
@@ -114,10 +114,36 @@ main (int argc, char **argv)
       exit (1);
   }
 
-
-  lca_init ();
+  lca_init_and_debug (INFO);
 
   int fd = lca_atmel_setup (arguments.args[0], 0x60);
+
+  if (fd < 0)
+  {
+	  exit (1);
+  }
+
+  int state = lca_get_device_state(fd);
+  lca_idle(fd);
+
+  printf("Device state: ");
+
+  switch (state) {
+  	case STATE_FACTORY:
+  		printf("FACTORY\n");
+  		break;
+  	case STATE_INITIALIZED:
+  		printf("INITIALIZED\n");
+  		break;
+  	case STATE_PERSONALIZED:
+  		printf("PERSONALIZED\n");
+  		break;
+  	default:
+  		printf("UNKNOWN\n");
+  		break;
+  }
+
+  printf("\n");
 
   if (arguments.personalize)
       rc = personalize (fd, arguments.input_file);
@@ -127,7 +153,43 @@ main (int argc, char **argv)
 
       assert (0 == lca_config2bin(arguments.input_file, &result));
 
+      lca_wakeup(fd);
+
       assert (0 == lca_burn_config_zone (fd, result));
+
+      lca_idle(fd);
+
+      /* We need to wait until we can read back correct data */
+      sleep (1);
+
+      lca_wakeup(fd);
+
+      printf("\n");
+      printf("Verify configuration:");
+
+      struct lca_octet_buffer response = get_config_zone (fd);
+      if (NULL != response.ptr)
+        {
+    	  unsigned int i = 0;
+
+    	  for (i = 0; i < response.len; i++)
+    	    {
+    		  if (i % 4 == 0)
+    			printf("\n%04u : ", i);
+
+              if (result.ptr[i] == response.ptr[i])
+            	printf ("== ");
+              else
+    		    printf ("%02X ", response.ptr[i]);
+    	    }
+
+          lca_free_octet_buffer (response);
+        }
+
+      printf("\n");
+
+      lca_idle(fd);
+      lca_wakeup(fd);
 
       if (arguments.lock)
           assert (0 == lca_lock_config_zone (fd, result));
