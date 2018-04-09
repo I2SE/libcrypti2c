@@ -78,7 +78,8 @@ lca_build_read4_cmd (enum DATA_ZONE zone, uint16_t addr)
 
   uint8_t param2[2] = {0};
   uint8_t param1 = set_zone_bits (zone);
-  param2[0] = addr;
+  param2[0] = addr & 0xFF;
+  param2[1] = addr >> 8;
 
   struct Command_ATSHA204 c =
     build_command (COMMAND_READ,
@@ -120,7 +121,8 @@ lca_build_read32_cmd (enum DATA_ZONE zone, uint16_t addr)
 
   param1 |= READ_32_MASK;
 
-  param2[0] = addr;
+  param2[0] = addr & 0xFF;
+  param2[1] = addr >> 8;
 
   struct Command_ATSHA204 c =
     build_command (COMMAND_READ,
@@ -160,7 +162,8 @@ lca_build_write4_cmd (enum DATA_ZONE zone, uint16_t addr, uint32_t buf)
   uint8_t param2[2] = {0};
   uint8_t param1 = set_zone_bits (zone);
 
-  param2[0] = addr;
+  param2[0] = addr & 0xFF;
+  param2[1] = addr >> 8;
 
   struct Command_ATSHA204 c =
     build_command (COMMAND_WRITE,
@@ -223,7 +226,8 @@ lca_build_write32_cmd (const enum DATA_ZONE zone,
 
   param1 |= WRITE_32_MASK;
 
-  param2[0] = addr;
+  param2[0] = addr & 0xFF;
+  param2[1] = addr >> 8;
 
   struct Command_ATSHA204 c =
     build_command (COMMAND_WRITE,
@@ -269,7 +273,7 @@ lca_write32_cmd (const int fd,
 bool
 lca_is_locked (int fd, enum DATA_ZONE zone, bool *locked_out)
 {
-  const uint8_t config_addr = 0x10;
+  const uint16_t config_addr = 0x0010;
   const uint8_t UNLOCKED = 0x55;
   const unsigned int CONFIG_ZONE_OFFSET = 23;
   const unsigned int DATA_ZONE_OFFSET = 22;
@@ -449,7 +453,7 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
 static bool
 is_otp_read_only_mode (int fd)
 {
-  const uint8_t ADDR = 0x04;
+  const uint16_t ADDR = 0x0004;
   uint32_t word = 0;
   assert (read4 (fd, CONFIG_ZONE, ADDR, &word));
 
@@ -539,9 +543,9 @@ get_serial_num (int fd)
 
   uint32_t word = 0;
 
-  const uint8_t SERIAL_PART1_ADDR = 0x00;
-  const uint8_t SERIAL_PART2_ADDR = 0x02;
-  const uint8_t SERIAL_PART3_ADDR = 0x03;
+  const uint16_t SERIAL_PART1_ADDR = 0x0000;
+  const uint16_t SERIAL_PART2_ADDR = 0x0002;
+  const uint16_t SERIAL_PART3_ADDR = 0x0003;
 
   read4 (fd, CONFIG_ZONE, SERIAL_PART1_ADDR, &word);
   memcpy (serial.ptr, &word, sizeof (word));
