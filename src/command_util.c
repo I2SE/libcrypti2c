@@ -238,15 +238,24 @@ set_zone_bits (const enum DATA_ZONE zone)
 
 }
 
-uint8_t
+uint16_t
+data_slot_to_addr(const uint8_t slot, const uint16_t offset)
+{
+	uint16_t val = 0;
+
+	val |= (offset & 0x1F) >> 2;
+	val |= (slot & 0xF) << 3;
+	val |= (offset & 0x0FE0) << 3;
+
+	return val;
+
+}
+
+uint16_t
 slot_to_addr (const enum DATA_ZONE zone, const uint8_t slot)
 {
     switch (zone)
     {
-    case DATA_ZONE:
-        assert (slot <= 15);
-        break;
-
     case OTP_ZONE:
         assert (0 == slot || 1 == slot);
         break;
@@ -259,7 +268,7 @@ slot_to_addr (const enum DATA_ZONE zone, const uint8_t slot)
         assert (false);
     }
 
-    uint8_t val = slot;
+    uint16_t val = slot;
 
     val <<= 3;
 

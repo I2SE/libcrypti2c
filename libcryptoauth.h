@@ -706,6 +706,17 @@ struct lca_octet_buffer
 get_otp_zone (int fd);
 
 /**
+ * Serialize the the logical slot number and byte offset
+ *
+ * @param slot The data slot number.
+ * @param offset The data offset within the slot
+ *
+ * @return The serialized word for this slot.
+ */
+uint16_t
+data_slot_to_addr(const uint8_t slot, const uint16_t offset);
+
+/**
  * Builds the command structure for a read 32 command.
  *
  * @param zone The zone from which to read.
