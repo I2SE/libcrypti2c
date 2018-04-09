@@ -596,6 +596,28 @@ lca_priv_write_cmd (const int fd,
                     const uint8_t write_key_slot,
                     const struct lca_octet_buffer write_key);
 
+/**
+ * Write ECC public key to the device. The specified slot must configured
+ * as a ECC public key and the configuration zone must be locked.
+ *
+ * @param fd The open file descriptor.
+ * @param encrypt True if the pub_key should be encrypted
+ * @param slot The slot to write the pub_key to.
+ * @param priv_key The public key as plaintext, passed by value. pub.ptr
+ * should be a valid pointer to the data and pub_key.len must be equal 64.
+ * @param write_key_slot The slot of the write key (only required for encryption)
+ * @param write_key The write key (only required for encryption)
+ *
+ * @return True if successful.
+ */
+bool
+lca_write_pub_ecc_key (const int fd,
+                       const bool encrypt,
+		               const uint8_t slot,
+					   const struct lca_octet_buffer pub_key,
+                       const uint8_t write_key_slot,
+					   const struct lca_octet_buffer write_key);
+
 /* ATSHA204 Commands */
 
 enum DATA_ZONE

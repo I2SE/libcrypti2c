@@ -317,3 +317,44 @@ lca_priv_write_cmd (const int fd,
 
   return status;
 }
+
+bool
+lca_write_pub_ecc_key (const int fd,
+                       const bool encrypt,
+		               const uint8_t slot,
+					   const struct lca_octet_buffer pub_key,
+                       const uint8_t write_key_slot,
+					   const struct lca_octet_buffer write_key)
+{
+  assert (slot <= 15);
+  assert (write_key_slot <= 15);
+  assert (NULL != pub_key.ptr);
+  assert (pub_key.len == 64);
+  assert (encrypt == false);
+
+  uint16_t addr;
+  bool result;
+  struct lca_octet_buffer block = lca_make_buffer (32);
+
+  // first block (32) = 4 pad bytes + pub_key[0:27]
+  memcpy(&block.ptr[4], &pub_key.ptr[0], 28);
+  addr = data_slot_to_addr(slot, 0);
+  result = lca_write32_cmd (fd, DATA_ZONE, addr, block, NULL);
+
+  // second block (32) = pub_key[28:31] + 4 pad bytes + pub_key[32:55]
+  memcpy(&block.ptr[0], &pub_key.ptr[28], 4);
+  memset(&block.ptr[4], 0, 4);
+  memcpy(&block.ptr[8], &pub_key.ptr[32], 24);
+  addr = data_slot_to_addr(slot, 32);
+  result = lca_write32_cmd (fd, DATA_ZONE, addr, block, NULL);
+
+  // third block (8) = pub_key[56:63]
+  memcpy(&block.ptr[0], &pub_key.ptr[56], 8);
+  memset(&block.ptr[8], 0, 24);
+  addr = data_slot_to_addr(slot, 64);
+  result = lca_write32_cmd (fd, DATA_ZONE, addr, block, NULL);
+
+  lca_free_octet_buffer(block);
+
+  return result;
+}
