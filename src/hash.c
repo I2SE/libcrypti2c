@@ -339,53 +339,53 @@ calc_digest(struct lca_octet_buffer data,
 }
 
 struct lca_octet_buffer
-calc_priv_write_mac(struct lca_octet_buffer data,
-                    uint8_t zone,
-                    uint16_t key_id,
-                    struct lca_octet_buffer tempkey)
+calc_write_mac(struct lca_octet_buffer data,
+		       uint8_t opcode,
+		       uint8_t zone,
+			   uint16_t addr,
+			   struct lca_octet_buffer tempkey)
 {
-  const uint8_t opcode = {0x46};
-  const uint8_t sn = 0xEE;
-  const uint8_t sn2[] ={0x01, 0x23};
-  uint8_t param2[2];
+	const uint8_t sn = 0xEE;
+	const uint8_t sn2[] ={0x01, 0x23};
+	uint8_t param2[2];
 
-  param2[0] = key_id & 0xFF;
-  param2[1] = key_id >> 8;
+	param2[0] = addr & 0xFF;
+	param2[1] = addr >> 8;
 
-  struct lca_octet_buffer zeros = lca_make_buffer (25);
+	struct lca_octet_buffer zeros = lca_make_buffer (25);
 
-  assert ((zone == 0) || (zone == ZONE_INPUT_ENCRYPTED));
-  assert (key_id <= 15);
-  assert (NULL != data.ptr);
-  assert (data.len <= 32);
-  assert (NULL != tempkey.ptr);
-  assert (tempkey.len == 32);
+	assert ((opcode == 0x12) || (opcode == 0x46));
+	assert (zone & ZONE_INPUT_ENCRYPTED);
+	assert (NULL != data.ptr);
+	assert (data.len <= 32);
+	assert (NULL != tempkey.ptr);
+	assert (tempkey.len == 32);
 
-  unsigned int len = tempkey.len + sizeof(opcode) + sizeof(zone) + sizeof(param2) + sizeof(sn) + sizeof(sn2) + zeros.len + data.len;
+	unsigned int len = tempkey.len + sizeof(opcode) + sizeof(zone) + sizeof(param2) + sizeof(sn) + sizeof(sn2) + zeros.len + data.len;
 
-  uint8_t *buf = lca_malloc_wipe(len);
+	uint8_t *buf = lca_malloc_wipe(len);
 
-  unsigned int offset = 0;
-  offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
-  offset = copy_over (buf, &opcode, sizeof(opcode), offset);
-  offset = copy_over (buf, &zone, sizeof(zone), offset);
-  offset = copy_over (buf, param2, sizeof(param2), offset);
-  offset = copy_over (buf, &sn, sizeof(sn), offset);
-  offset = copy_over (buf, sn2, sizeof(sn2), offset);
-  offset = copy_over (buf, zeros.ptr, zeros.len, offset);
-  offset = copy_over (buf, data.ptr, data.len, offset);
+	unsigned int offset = 0;
+	offset = copy_over (buf, tempkey.ptr, tempkey.len, offset);
+	offset = copy_over (buf, &opcode, sizeof(opcode), offset);
+	offset = copy_over (buf, &zone, sizeof(zone), offset);
+	offset = copy_over (buf, param2, sizeof(param2), offset);
+	offset = copy_over (buf, &sn, sizeof(sn), offset);
+	offset = copy_over (buf, sn2, sizeof(sn2), offset);
+	offset = copy_over (buf, zeros.ptr, zeros.len, offset);
+	offset = copy_over (buf, data.ptr, data.len, offset);
 
-  lca_print_hex_string("Data to hash", buf, len);
-  struct lca_octet_buffer data_to_hash = {buf, len};
-  struct lca_octet_buffer digest;
-  digest = lca_sha256_buffer (data_to_hash);
+	lca_print_hex_string("Data to hash", buf, len);
+	struct lca_octet_buffer data_to_hash = {buf, len};
+	struct lca_octet_buffer digest;
+	digest = lca_sha256_buffer (data_to_hash);
 
-  lca_print_hex_string ("Result hash", digest.ptr, digest.len);
+	lca_print_hex_string ("Result hash", digest.ptr, digest.len);
 
-  lca_free_octet_buffer (zeros);
-  free(buf);
+	lca_free_octet_buffer (zeros);
+	free(buf);
 
-  return digest;
+	return digest;
 }
 
 bool

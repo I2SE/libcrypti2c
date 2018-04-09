@@ -284,7 +284,7 @@ lca_priv_write_cmd (const int fd,
         }
 
       // calc MAC
-      mac = calc_priv_write_mac(priv_key, param1, slot, tempkey);
+      mac = calc_write_mac(priv_key, COMMAND_PRIV_WRITE, param1, slot, tempkey);
       memcpy (data.ptr + 36, mac.ptr, mac.len);
 
       lca_free_octet_buffer(seed);
