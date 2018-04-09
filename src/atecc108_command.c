@@ -233,7 +233,7 @@ lca_priv_write_cmd (const int fd,
 
   /* The input data is encrypted using TempKey */
   if (encrypt)
-    param1 |= 0b01000000;
+    param1 |= ZONE_INPUT_ENCRYPTED;
 
   param2[0] = slot;
 

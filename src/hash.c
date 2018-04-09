@@ -354,7 +354,7 @@ calc_priv_write_mac(struct lca_octet_buffer data,
 
   struct lca_octet_buffer zeros = lca_make_buffer (25);
 
-  assert ((zone == 0) || (zone == 0b01000000));
+  assert ((zone == 0) || (zone == ZONE_INPUT_ENCRYPTED));
   assert (key_id <= 15);
   assert (NULL != data.ptr);
   assert (data.len <= 32);

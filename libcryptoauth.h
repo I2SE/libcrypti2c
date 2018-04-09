@@ -608,6 +608,8 @@ enum DATA_ZONE
     KEY_CONFIG_ZONE = 5
   };
 
+#define ZONE_INPUT_ENCRYPTED 0b01000000
+
 /* Random Commands */
 
 struct Command_ATSHA204
