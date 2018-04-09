@@ -636,7 +636,7 @@ lca_get_random (int fd, bool update_seed);
  * @return The populated command structure.
  */
 struct Command_ATSHA204
-lca_build_read4_cmd (enum DATA_ZONE zone, uint8_t addr);
+lca_build_read4_cmd (enum DATA_ZONE zone, uint16_t addr);
 
 /**
  * Builds the command structure for the write 4 command.
@@ -648,7 +648,7 @@ lca_build_read4_cmd (enum DATA_ZONE zone, uint8_t addr);
  * @return The populated command struct.
  */
 struct Command_ATSHA204
-lca_build_write4_cmd (enum DATA_ZONE zone, uint8_t addr, uint32_t buf);
+lca_build_write4_cmd (enum DATA_ZONE zone, uint16_t addr, uint32_t buf);
 
 /**
  * Builds the command structure for the write 32 command.
@@ -662,7 +662,7 @@ lca_build_write4_cmd (enum DATA_ZONE zone, uint8_t addr, uint32_t buf);
  */
 struct Command_ATSHA204
 lca_build_write32_cmd (const enum DATA_ZONE zone,
-                        const uint8_t addr,
+                        const uint16_t addr,
                         const struct lca_octet_buffer buf,
                         const struct lca_octet_buffer *mac);
 
@@ -680,7 +680,7 @@ lca_build_write32_cmd (const enum DATA_ZONE zone,
 bool
 lca_write32_cmd (const int fd,
                   const enum DATA_ZONE zone,
-                  const uint8_t addr,
+                  const uint16_t addr,
                   const struct lca_octet_buffer buf,
                   const struct lca_octet_buffer *mac);
 
@@ -714,7 +714,7 @@ get_otp_zone (int fd);
  * @return The populated command structure.
  */
 struct Command_ATSHA204
-lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr);
+lca_build_read32_cmd (enum DATA_ZONE zone, uint16_t addr);
 
 /**
  * Generate SHA256 and store it into TempKey

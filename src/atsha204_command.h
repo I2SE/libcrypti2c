@@ -39,7 +39,7 @@
  * @return True if successful other false and buf should not be investigated.
  */
 bool
-read4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t *buf);
+read4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t *buf);
 
 
 /**
@@ -54,7 +54,7 @@ read4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t *buf);
  * @return True if successful.
  */
 bool
-write4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t buf);
+write4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t buf);
 
 
 /**
@@ -142,7 +142,7 @@ get_serial_num (int fd);
  * @return 32 bytes of data or buf.ptr will be null on an error
  */
 struct lca_octet_buffer
-read32 (int fd, enum DATA_ZONE zone, uint8_t addr);
+read32 (int fd, enum DATA_ZONE zone, uint16_t addr);
 
 
 

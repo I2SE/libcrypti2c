@@ -73,7 +73,7 @@ lca_get_random (int fd, bool update_seed)
 }
 
 struct Command_ATSHA204
-lca_build_read4_cmd (enum DATA_ZONE zone, uint8_t addr)
+lca_build_read4_cmd (enum DATA_ZONE zone, uint16_t addr)
 {
 
   uint8_t param2[2] = {0};
@@ -92,7 +92,7 @@ lca_build_read4_cmd (enum DATA_ZONE zone, uint8_t addr)
 }
 
 bool
-read4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t *buf)
+read4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t *buf)
 {
 
   bool result = false;
@@ -111,7 +111,7 @@ read4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t *buf)
 }
 
 struct Command_ATSHA204
-lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr)
+lca_build_read32_cmd (enum DATA_ZONE zone, uint16_t addr)
 {
   uint8_t param2[2] = {0};
   uint8_t param1 = set_zone_bits (zone);
@@ -134,7 +134,7 @@ lca_build_read32_cmd (enum DATA_ZONE zone, uint8_t addr)
 }
 
 struct lca_octet_buffer
-read32 (int fd, enum DATA_ZONE zone, uint8_t addr)
+read32 (int fd, enum DATA_ZONE zone, uint16_t addr)
 {
 
   struct Command_ATSHA204 c = lca_build_read32_cmd (zone, addr);
@@ -154,7 +154,7 @@ read32 (int fd, enum DATA_ZONE zone, uint8_t addr)
 
 
 struct Command_ATSHA204
-lca_build_write4_cmd (enum DATA_ZONE zone, uint8_t addr, uint32_t buf)
+lca_build_write4_cmd (enum DATA_ZONE zone, uint16_t addr, uint32_t buf)
 {
 
   uint8_t param2[2] = {0};
@@ -174,7 +174,7 @@ lca_build_write4_cmd (enum DATA_ZONE zone, uint8_t addr, uint32_t buf)
 }
 
 bool
-write4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t buf)
+write4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t buf)
 {
 
   bool status = false;
@@ -194,7 +194,7 @@ write4 (int fd, enum DATA_ZONE zone, uint8_t addr, uint32_t buf)
 
 struct Command_ATSHA204
 lca_build_write32_cmd (const enum DATA_ZONE zone,
-                        const uint8_t addr,
+                        const uint16_t addr,
                         const struct lca_octet_buffer buf,
                         const struct lca_octet_buffer *mac)
 {
@@ -239,7 +239,7 @@ lca_build_write32_cmd (const enum DATA_ZONE zone,
 bool
 lca_write32_cmd (const int fd,
                   const enum DATA_ZONE zone,
-                  const uint8_t addr,
+                  const uint16_t addr,
                   const struct lca_octet_buffer buf,
                   const struct lca_octet_buffer *mac)
 {
