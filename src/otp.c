@@ -103,7 +103,6 @@ personalize (int fd, const char *config_file)
     {
         rc = lca_config2bin(config_file, &config);
         if (rc)
-
             goto OUT;
 
         rc = lca_burn_config_zone (fd, config);
@@ -122,7 +121,9 @@ personalize (int fd, const char *config_file)
 
     if (state == STATE_INITIALIZED)
     {
-        otp = lca_build_otp_zone ();
+        rc = lca_otp2bin(config_file, &otp);
+        if (rc)
+            goto OUT;
 
         rc = lca_burn_otp_zone (fd, otp);
 
