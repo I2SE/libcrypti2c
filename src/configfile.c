@@ -33,7 +33,7 @@
 
 
 static struct lca_octet_buffer
-parse_body (xmlDocPtr doc, xmlNodePtr cur) {
+parse_config_zone (xmlDocPtr doc, xmlNodePtr cur) {
 
   xmlChar *key;
   char *key_cp;
@@ -141,7 +141,7 @@ lca_config2bin(const char *docname, struct lca_octet_buffer *out)
     {
       if ((!xmlStrcmp(cur->name, (const xmlChar *)"ConfigZone")))
         {
-          tmp = parse_body (doc, cur);
+          tmp = parse_config_zone (doc, cur);
           if (NULL != tmp.ptr)
             {
               out->ptr = tmp.ptr;
@@ -160,6 +160,125 @@ lca_config2bin(const char *docname, struct lca_octet_buffer *out)
   return rc;
 }
 
+static struct lca_octet_buffer
+parse_otp_zone (xmlNodePtr cur) {
+
+  xmlChar *key;
+  char *key_cp;
+  int x = 0;
+  const char tok[] = " ";
+  char * token, * end;
+  unsigned long val;
+
+  struct lca_octet_buffer result = {0,0};
+
+  uint8_t *otpzone = NULL;
+
+  key = xmlNodeGetContent(cur);
+  if (NULL != key)
+    {
+      key_cp = strdup((const char *)key);
+      token = strtok(key_cp, tok);
+
+      while (token!=NULL)
+        {
+          otpzone = realloc (otpzone, x + 1);
+          assert (NULL != otpzone);
+          val = strtoul(token, &end, 16);
+
+          if (val > 0xFF)
+            goto OUT;
+
+          if (*end != '\0')
+            goto OUT;
+
+          otpzone[x] = val;
+          x+=1;
+
+          // get the next token
+          token = strtok(NULL, tok);
+
+        }
+
+      xmlFree(key);
+      free(key_cp);
+    }
+
+  result.ptr = otpzone;
+  result.len = x;
+
+  return result;
+
+ OUT:
+  free(otpzone);
+  xmlFree(key);
+  free(key_cp);
+
+  return result;
+}
+
+int
+lca_otp2bin(const char *docname, struct lca_octet_buffer *out)
+{
+
+  xmlDocPtr doc;
+  xmlNodePtr cur;
+  struct lca_octet_buffer tmp;
+  int rc = -1;
+
+  assert (NULL != docname);
+  assert (NULL != out);
+
+  doc = xmlParseFile(docname);
+
+  if (doc == NULL)
+    {
+      fprintf(stderr,"Document not parsed successfully. \n");
+      rc = -2;
+      goto OUT;
+    }
+
+  cur = xmlDocGetRootElement(doc);
+
+  if (cur == NULL)
+    {
+      fprintf(stderr,"empty document\n");
+      rc = -3;
+      goto FREE;
+    }
+
+  if (xmlStrcmp(cur->name, (const xmlChar *) "ECC108Content.01") &&
+	  xmlStrcmp(cur->name, (const xmlChar *) "ECC508Content.01"))
+    {
+      fprintf(stderr,"document of unknown type, root node = <%s>\n", cur->name);
+      rc = -4;
+      goto FREE;
+    }
+
+  cur = cur->xmlChildrenNode;
+
+  while (cur != NULL)
+    {
+      if ((!xmlStrcmp(cur->name, (const xmlChar *)"OtpZone")))
+        {
+          tmp = parse_otp_zone (cur);
+          if (NULL != tmp.ptr)
+            {
+              out->ptr = tmp.ptr;
+              out->len = tmp.len;
+              rc = 0;
+            }
+
+        }
+
+      cur = cur->next;
+    }
+
+ FREE:
+  xmlFreeDoc(doc);
+ OUT:
+  return rc;
+}
 
 int
 lca_burn_config_zone (int fd, struct lca_octet_buffer cz)

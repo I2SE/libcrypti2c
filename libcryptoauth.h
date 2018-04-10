@@ -869,6 +869,9 @@ struct lca_octet_buffer
 lca_build_otp_zone (void);
 
 int
+lca_otp2bin(const char *docname, struct lca_octet_buffer *out);
+
+int
 lca_burn_otp_zone (int fd, struct lca_octet_buffer otp_zone);
 
 int
