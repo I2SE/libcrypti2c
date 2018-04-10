@@ -146,7 +146,13 @@ main (int argc, char **argv)
   printf("\n");
 
   if (arguments.personalize)
+  {
+      lca_wakeup(fd);
+
       rc = personalize (fd, arguments.input_file);
+
+      lca_idle(fd);
+  }
   else
   {
       struct lca_octet_buffer result;
