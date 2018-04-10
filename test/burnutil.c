@@ -152,6 +152,31 @@ main (int argc, char **argv)
       rc = personalize (fd, arguments.input_file);
 
       lca_idle(fd);
+
+      sleep (1);
+
+      lca_wakeup(fd);
+
+      printf("\n");
+      printf("Verify OTP:");
+
+      struct lca_octet_buffer response = get_otp_zone (fd);
+      if (NULL != response.ptr)
+        {
+          unsigned int i = 0;
+
+          for (i = 0; i < response.len; i++)
+	        {
+	          if (i % 4 == 0)
+		        printf("\n%04u : ", i);
+
+	          printf ("%02X ", response.ptr[i]);
+	        }
+
+	      lca_free_octet_buffer (response);
+        }
+
+      printf("\n");
   }
   else
   {
