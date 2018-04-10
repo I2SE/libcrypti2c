@@ -295,15 +295,33 @@ lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
   assert (NULL != cz.ptr);
 
   unsigned int x = 0;
+  unsigned int retry;
 
   for (x = 16; x < cz.len; x+=4)
     {
       int addr = x >> 2;
       uint32_t *data = (uint32_t *)&cz.ptr[x];
-      if (write4 (fd, CONFIG_ZONE, addr, *data))
-        printf ("Write %02X %02X %02X %02X to %u success\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
-      else
-        printf ("Write %02X %02X %02X %02X to %u Failure\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+
+      lca_idle(fd);
+      lca_wakeup(fd);
+
+      if (x == 84)
+        {
+    	  printf ("Write %02X %02X %02X %02X to %u skip\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+    	  continue;
+        }
+
+      for (retry = 0; retry < 3; retry++)
+        {
+          if (write4 (fd, CONFIG_ZONE, addr, *data))
+            {
+              printf ("Write %02X %02X %02X %02X to %u success\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+              break;
+            }
+
+          printf ("Write %02X %02X %02X %02X to %u Failure\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+        }
+
     }
 
   return 0;
