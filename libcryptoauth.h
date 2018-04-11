@@ -765,6 +765,22 @@ lca_gen_digest (int fd,
                 uint16_t key_id,
                 struct lca_octet_buffer *other_data);
 
+/**
+ * Performs the nonce operation on the device.  Depending on the data
+ * parameter, this command will either generate a new nonce or combine
+ * an external value.
+ *
+ * @param fd The open file descriptor
+ * @param data If 32 bytes, this command will load the 32 byte data
+ * into the temp key register directly.  If 20 bytes, it will be
+ * combined per the manual and 32 bytes of random data will be returned.
+ *
+ * @return If data is 32 bytes, it will return a buffer of size 1 with
+ * a single 0 byte.  Otherwise, it returns a 32 byte random number.
+ */
+struct lca_octet_buffer
+lca_gen_nonce (int fd, struct lca_octet_buffer data);
+
 enum DEVICE_STATE
   {
 	STATE_UNKNOWN = -1,

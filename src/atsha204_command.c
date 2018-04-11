@@ -590,7 +590,7 @@ lca_get_device_state (int fd)
 
 
 struct lca_octet_buffer
-gen_nonce (int fd, struct lca_octet_buffer data)
+lca_gen_nonce (int fd, struct lca_octet_buffer data)
 {
   const unsigned int EXTERNAL_INPUT_LEN = 32;
   const unsigned int NEW_NONCE_LEN = 20;
@@ -654,7 +654,7 @@ get_nonce (int fd)
   if (otp.len > MIX_DATA_LEN && otp.ptr != NULL)
     {
       otp.len = MIX_DATA_LEN;
-      nonce = gen_nonce (fd, otp);
+      nonce = lca_gen_nonce (fd, otp);
       otp.len = otp_len;
 
     }
@@ -670,7 +670,7 @@ load_nonce (int fd, struct lca_octet_buffer data)
 {
   assert (data.ptr != NULL && data.len == 32);
 
-  struct lca_octet_buffer rsp = gen_nonce (fd, data);
+  struct lca_octet_buffer rsp = lca_gen_nonce (fd, data);
 
   if (NULL == rsp.ptr || *rsp.ptr != 0)
     return false;

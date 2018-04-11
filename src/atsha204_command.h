@@ -58,22 +58,6 @@ write4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t buf);
 
 
 /**
- * Performs the nonce operation on the device.  Depending on the data
- * parameter, this command will either generate a new nonce or combine
- * an external value.
- *
- * @param fd The open file descriptor
- * @param data If 32 bytes, this command will load the 32 byte data
- * into the temp key register directly.  If 20 bytes, it will be
- * combined per the manual and 32 bytes of random data will be returned.
- *
- * @return If data is 32 bytes, it will return a buffer of size 1 with
- * a single 0 byte.  Otherwise, it returns a 32 byte random number.
- */
-struct lca_octet_buffer
-gen_nonce (int fd, struct lca_octet_buffer data);
-
-/**
  * Generates a new nonce from the device.  This will combine the OTP
  * zone with a random number to generate the nonce.
  *

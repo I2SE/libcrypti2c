@@ -253,7 +253,7 @@ lca_priv_write_cmd (const int fd,
 
       seed = lca_make_random_buffer (20);
 
-      rand_out = gen_nonce (fd, seed);
+      rand_out = lca_gen_nonce (fd, seed);
 
       // calc tempkey
       tempkey = calc_nonce(seed, rand_out, SEED_UPDATE_MODE);
