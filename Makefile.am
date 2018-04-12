@@ -37,7 +37,7 @@ libcryptoauth_la_LIBADD = $(XML_LIBS)
 ## The libtool archive file (.la) will be installed into the directory named
 ## by the predefined variable $(bindir), along with the actual shared library
 ## file (.so).
-pkglib_LTLIBRARIES = libcryptoauth.la
+lib_LTLIBRARIES = libcryptoauth.la
 
 ## Define the source file list for the "libcryptoauth-@CRYPTOAUTH_API_VERSION@.la"
 ## target.  Note that @CRYPTOAUTH_API_VERSION@ is not interpreted by Automake and
