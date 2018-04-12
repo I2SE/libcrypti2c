@@ -89,7 +89,7 @@ lca_process_command (int fd, struct Command_ATSHA204 *c,
                                                          c_len,
                                                          rec_buf,
                                                          recv_len,
-                                                         &c->exec_time);
+                                                         &c->wait_time);
 
   lca_free_wipe (serialized, c_len);
 

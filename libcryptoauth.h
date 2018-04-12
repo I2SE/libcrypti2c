@@ -249,7 +249,7 @@ struct Command_ATSHA204
     uint8_t *data;
     unsigned int data_len;
     uint8_t checksum[2];
-    struct timespec exec_time;
+    struct timespec wait_time;
 };
 
 enum LCA_STATUS_RESPONSE

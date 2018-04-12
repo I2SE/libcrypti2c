@@ -87,8 +87,9 @@ void set_execution_time (struct Command_ATSHA204 *c, const unsigned int sec,
                         const unsigned long nano)
 {
   assert (NULL != c);
-  c->exec_time.tv_sec = sec;
-  c->exec_time.tv_nsec = nano;
+  c->wait_time.tv_sec = sec;
+  /* Take care of bus handling and OS overhead, assume 8 ms */
+  c->wait_time.tv_nsec = nano + 8000000;
 
 }
 
@@ -189,7 +190,7 @@ lca_print_command (struct Command_ATSHA204 *c)
     lca_print_hex_string ("Data", c->data, c->data_len);
   LCA_LOG (DEBUG,"CRC: 0x%02X 0x%02X", c->checksum[0], c->checksum[1]);
   LCA_LOG (DEBUG,"Wait time: %ld seconds %lu nanoseconds",
-          c->exec_time.tv_sec, c->exec_time.tv_nsec);
+          c->wait_time.tv_sec, c->wait_time.tv_nsec);
 
 
 
