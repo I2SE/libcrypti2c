@@ -303,7 +303,7 @@ lca_read_and_validate (int fd, uint8_t *buf, unsigned int len)
     }
   else
     {
-      LCA_LOG (DEBUG,"Read failed, retrying");
+      LCA_LOG (DEBUG,"Read failed: %d", read_bytes);
       status = RSP_NAK;
 
     }
