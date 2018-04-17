@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with libcryptoauth.  If not, see <http://www.gnu.org/licenses/>.
 TESTS = check_libcryptoauth
-check_PROGRAMS = check_libcryptoauth csu burnutil ecdh
+check_PROGRAMS = check_libcryptoauth csu ecdh
 check_libcryptoauth_SOURCES = tester.c test_hmac.c \
 			      $(top_builddir)/libcryptoauth.h \
                               test_hmac.h test_xml.c
@@ -26,6 +26,8 @@ check_libcryptoauth_LDADD = ../libcryptoauth.la @CHECK_LIBS@ \
 
 csu_SOURCES = csu.c $(top_builddir)/libcryptoauth.h
 csu_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
+
+bin_PROGRAMS = burnutil
 
 burnutil_SOURCES = burnutil.c $(top_builddir)/libcryptoauth.h
 burnutil_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
