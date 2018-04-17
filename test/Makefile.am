@@ -30,7 +30,7 @@ csu_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
 bin_PROGRAMS = burnutil
 
 burnutil_SOURCES = burnutil.c $(top_builddir)/libcryptoauth.h
-burnutil_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
+burnutil_LDADD = ../libcryptoauth.la
 
 ecdh_SOURCES = ecdh.c $(top_builddir)/libcryptoauth.h
 ecdh_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
