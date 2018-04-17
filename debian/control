@@ -1,7 +1,7 @@
 Source: libcryptoauth
 Priority: optional
 Maintainer: Josh Datko <jbd@cryptotronix.com>
-Build-Depends: debhelper (>= 9), autotools-dev, pkg-config, libgcrypt20-dev, libxml2-dev
+Build-Depends: debhelper (>= 9), autotools-dev, pkg-config, libgcrypt20-dev, libxml2-dev, libgpg-error-dev
 Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/cryptotronix/libcrypti2c
