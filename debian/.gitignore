@@ -1,0 +1,9 @@
+.debhelper
+debhelper-build-stamp
+*.substvars
+*.log
+burnutil
+libcryptoauth-dev
+libcryptoauth0
+tmp
+files
