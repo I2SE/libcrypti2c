@@ -32,6 +32,9 @@ PKG_CHECK_MODULES([CHECK], [check >= 0.9.8],,[AC_MSG_WARN("Check not found")])
 #Check for libgcrypt
 AM_PATH_LIBGCRYPT([], [], AC_MSG_ERROR([libgcrypt is not installed]))
 
+#Check for libgpg-error
+AM_PATH_GPG_ERROR([], [], AC_MSG_ERROR([libgpg-error is not installed]))
+
 AC_PATH_PROG([DEBUILD], [dpkg-buildpackage], [notfound])
 AC_PATH_PROG([TEST], [test])
 # Generate two configuration headers; one for building the library itself with

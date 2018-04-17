@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: @PACKAGE_NAME@
 Description: Library for communicating Atmel's CryptoAuthentication devices.
 Version: @PACKAGE_VERSION@
-Libs.private: -lgcrypt
+Libs.private: -lgcrypt -lgpg-error
 URL: @PACKAGE_URL@
 Libs: -L${libdir} -lcryptoauth
 Cflags: -I${includedir}/cryptoauth-@CRYPTOAUTH_API_VERSION@

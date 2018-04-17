@@ -28,8 +28,8 @@ AM_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 ## to provide a way for the user to supply additional arguments.
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
-libcryptoauth_la_CPPFLAGS = $(XML_CFLAGS) $(LIBGCRYPT_CFLAGS)
-libcryptoauth_la_LIBADD = $(XML_LIBS) $(LIBGCRYPT_LIBS)
+libcryptoauth_la_CPPFLAGS = $(XML_CFLAGS) $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+libcryptoauth_la_LIBADD = $(XML_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
 ## Define a libtool archive target "libcryptoauth-@EXAMPLE_API_VERSION@.la", with
 ## @CRYPTOAUTH_API_VERSION@ substituted into the generated Makefile at configure
