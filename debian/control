@@ -1,7 +1,7 @@
 Source: libcryptoauth
 Priority: optional
 Maintainer: Josh Datko <jbd@cryptotronix.com>
-Build-Depends: debhelper (>= 9), autotools-dev, texinfo, check, pkg-config
+Build-Depends: debhelper (>= 9), autotools-dev, pkg-config, libgcrypt20-dev, libxml2-dev
 Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/cryptotronix/libcrypti2c
@@ -20,3 +20,9 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Library for Atmel CryptoAuthentication Devices
  library for Atmel's CryptoAutentication Devices, ATECC108 and ATSHA204
+
+Package: burnutil
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Command line utility to burn configuration, OTPs etc.
+ in Atmel's CryptoAutentication Devices, ATECC108 and ATSHA204
