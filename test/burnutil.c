@@ -94,7 +94,8 @@ int
 main (int argc, char **argv)
 {
   struct arguments arguments;
-  int rc = -1;
+  struct lca_octet_buffer serial;
+  int i, rc = -1;
 
   /* Default values. */
   arguments.silent = 0;
@@ -124,11 +125,11 @@ main (int argc, char **argv)
   }
 
   int state = lca_get_device_state(fd);
-  lca_idle(fd);
 
   printf("Device state: ");
 
-  switch (state) {
+  switch (state)
+  {
   	case STATE_FACTORY:
   		printf("FACTORY\n");
   		break;
@@ -143,7 +144,18 @@ main (int argc, char **argv)
   		break;
   }
 
+  serial = lca_get_serial_num (fd);
+
+  printf("\nSerial number: ");
+
+  for (i = 0; i < serial.len; i++)
+    {
+      printf ("%02X ", serial.ptr[i]);
+    }
+
   printf("\n");
+
+  lca_idle(fd);
 
   if (arguments.personalize)
   {
@@ -163,8 +175,6 @@ main (int argc, char **argv)
       struct lca_octet_buffer response = get_otp_zone (fd);
       if (NULL != response.ptr)
         {
-          unsigned int i = 0;
-
           for (i = 0; i < response.len; i++)
 	        {
 	          if (i % 4 == 0)
