@@ -141,6 +141,7 @@ main (int argc, char **argv)
   		break;
   	default:
   		printf("UNKNOWN\n");
+        exit (1);
   		break;
   }
 
@@ -170,11 +171,12 @@ main (int argc, char **argv)
       lca_wakeup(fd);
 
       printf("\n");
-      printf("Verify OTP:");
 
       struct lca_octet_buffer response = get_otp_zone (fd);
       if (NULL != response.ptr)
         {
+          printf("Verify OTP:");
+
           for (i = 0; i < response.len; i++)
 	        {
 	          if (i % 4 == 0)
@@ -184,6 +186,10 @@ main (int argc, char **argv)
 	        }
 
 	      lca_free_octet_buffer (response);
+        }
+      else
+        {
+          printf("Unable to get OTP");
         }
 
       printf("\n");
@@ -206,12 +212,13 @@ main (int argc, char **argv)
       lca_wakeup(fd);
 
       printf("\n");
-      printf("Verify configuration:");
 
       struct lca_octet_buffer response = get_config_zone (fd);
       if (NULL != response.ptr)
         {
     	  unsigned int i = 0;
+
+          printf("Verify configuration:");
 
     	  for (i = 0; i < response.len; i++)
     	    {
@@ -225,6 +232,11 @@ main (int argc, char **argv)
     	    }
 
           lca_free_octet_buffer (response);
+        }
+      else
+        {
+          printf("Unable to get configuration");
+          exit (1);
         }
 
       printf("\n");
