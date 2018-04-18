@@ -793,6 +793,16 @@ enum DEVICE_STATE
   };
 
 /**
+ * Retrieve the device's serial number
+ *
+ * @param fd An open file descriptor
+ *
+ * @return a malloc'd buffer with the serial number.
+ */
+struct lca_octet_buffer
+lca_get_serial_num (int fd);
+
+/**
  * Returns the logical state of the device based on the config, data,
  * and OTP zones
  *

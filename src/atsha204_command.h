@@ -105,16 +105,6 @@ set_otp_zone (int fd, struct lca_octet_buffer *otp_zone);
 bool
 lock (int fd, enum DATA_ZONE zone, uint16_t crc);
 
-/**
- * Retrieve the device's serial number
- *
- * @param fd An open file descriptor
- *
- * @return a malloc'd buffer with the serial number.
- */
-struct lca_octet_buffer
-get_serial_num (int fd);
-
 
 /**
  * Reads 32 Bytes from the address

@@ -534,7 +534,7 @@ set_otp_zone (int fd, struct lca_octet_buffer *otp_zone)
 
 
 struct lca_octet_buffer
-get_serial_num (int fd)
+lca_get_serial_num (int fd)
 {
   struct lca_octet_buffer serial;
   const unsigned int len = sizeof (uint32_t) * 2 + 1;
