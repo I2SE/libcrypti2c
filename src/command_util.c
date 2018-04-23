@@ -129,8 +129,8 @@ lca_print_command (struct Command_ATSHA204 *c)
     case COMMAND_DERIVE_KEY:
       opcode = "Command Derive Key";
       break;
-    case COMMAND_DEV_REV:
-      opcode = "Command Dev Rev";
+    case COMMAND_INFO:
+      opcode = "Command Info";
       break;
     case COMMAND_GEN_DIG:
       opcode = "Command Generate Digest";

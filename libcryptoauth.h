@@ -618,6 +618,30 @@ lca_write_pub_ecc_key (const int fd,
                        const uint8_t write_key_slot,
                        const struct lca_octet_buffer write_key);
 
+enum INFO_MODE
+  {
+    LCA_REVISION_MODE = 0,
+	LCA_KEY_VALID_MODE,
+	LCA_STATE,
+	LCA_GPIO
+  };
+
+/**
+ * Retrieve device information
+ *
+ * @param fd The open file descriptor.
+ * @param mode mode of device information
+ * @param param parameter for mode
+ * @param buf returned device information
+ *
+ * @return True if successful.
+ */
+bool
+lca_info (const int fd,
+          enum INFO_MODE mode,
+		  const uint16_t param,
+		  uint32_t *buf);
+
 /* ATSHA204 Commands */
 
 enum DATA_ZONE

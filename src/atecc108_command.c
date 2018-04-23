@@ -364,3 +364,33 @@ lca_write_pub_ecc_key (const int fd,
 
   return result;
 }
+
+bool
+lca_info (const int fd,
+          enum INFO_MODE mode,
+		  const uint16_t param,
+		  uint32_t *buf)
+{
+  assert (mode < 4);
+  assert (NULL != buf);
+
+  bool result = false;
+  uint8_t param2[2] = {0};
+  param2[0] = param & 0xFF;
+  param2[1] = param >> 8;
+
+  struct Command_ATSHA204 c = build_command (COMMAND_INFO,
+		                                     mode,
+                                             param2,
+                                             NULL, 0,
+                                             0, INFO_MAX_EXEC);
+
+  if (RSP_SUCCESS == lca_process_command (fd,
+                                          &c,
+                                          (uint8_t *)buf, sizeof (uint32_t)))
+    {
+      result = true;
+    }
+
+  return result;
+}

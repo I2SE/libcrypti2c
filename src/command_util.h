@@ -35,7 +35,7 @@
 #define COMMAND_DERIVE_KEY      0x1C
 #define COMMAND_UPDATE_EXTRA    0x20
 #define COMMAND_CHECK_MAC       0x28
-#define COMMAND_DEV_REV         0x30
+#define COMMAND_INFO            0x30
 #define COMMAND_GEN_KEY         0x40
 #define COMMAND_ECC_SIGN        0x41
 #define COMMAND_ECDH            0x43
@@ -71,7 +71,7 @@
 /* Execution Times (all times in nanosecs) */
 #define DERIVE_KEY_AVG_EXEC     14000000
 #define MAC_AVG_EXEC            12000000
-#define DEV_REV_AVG_EXEC          400000
+#define INFO_AVG_EXEC             400000
 #define GEN_DIG_AVG_EXEC        11000000
 #define HMAC_AVG_EXEC           27000000
 #define CHECK_MAC_AVG_EXEC      12000000
@@ -88,7 +88,7 @@
 #define PRIV_WRITE_AVG_EXEC     12000000
 
 #define DERIVE_KEY_MAX_EXEC     62000000
-#define DEV_REV_MAX_EXEC         2000000
+#define INFO_MAX_EXEC            2000000
 #define GEN_DIG_MAX_EXEC        43000000
 #define HMAC_MAX_EXEC           69000000
 #define CHECK_MAC_MAX_EXEC      38000000
