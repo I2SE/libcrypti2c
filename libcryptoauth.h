@@ -613,10 +613,10 @@ lca_priv_write_cmd (const int fd,
 bool
 lca_write_pub_ecc_key (const int fd,
                        const bool encrypt,
-		               const uint8_t slot,
-					   const struct lca_octet_buffer pub_key,
+                       const uint8_t slot,
+                       const struct lca_octet_buffer pub_key,
                        const uint8_t write_key_slot,
-					   const struct lca_octet_buffer write_key);
+                       const struct lca_octet_buffer write_key);
 
 /* ATSHA204 Commands */
 
