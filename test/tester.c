@@ -15,7 +15,7 @@ int main(void)
 
     gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
 
-    lca_set_log_level(DEBUG);
+    lca_set_log_level(LCA_DEBUG);
 
     s = hmac_suite();
     e = ecdsa_suite();

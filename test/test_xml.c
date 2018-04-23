@@ -37,9 +37,9 @@ START_TEST(test_xml_parse)
 
     printf ("C: %p, l %u\n", result.ptr, result.len);
 
-    lca_set_log_level(DEBUG);
+    lca_set_log_level(LCA_DEBUG);
     lca_print_hex_string ("Config zone", result.ptr, result.len);
-    lca_set_log_level(INFO);
+    lca_set_log_level(LCA_INFO);
 
     assert (0 == memcmp(ecc108, result.ptr, result.len) );
 }

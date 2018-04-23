@@ -123,11 +123,11 @@ lca_send_and_receive (int fd,
     {
       nanosleep (wait_time , &tim_rem);
       rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len);
-      LCA_LOG (DEBUG, "Command Response: %s", status_to_string (rsp));
+      LCA_LOG (LCA_DEBUG, "Command Response: %s", status_to_string (rsp));
     }
   else
     {
-      LCA_LOG (DEBUG, "Write failed: %d\n", result);
+      LCA_LOG (LCA_DEBUG, "Write failed: %d\n", result);
     }
 
 #else
@@ -146,7 +146,7 @@ lca_send_and_receive (int fd,
 
       if (result == 1)
         {
-          LCA_LOG (DEBUG, "Command Response: %s", status_to_string (recv_buf[0]));
+          LCA_LOG (LCA_DEBUG, "Command Response: %s", status_to_string (recv_buf[0]));
           rsp = recv_buf[0];
         }
       else
@@ -156,7 +156,7 @@ lca_send_and_receive (int fd,
     }
   else
     {
-      LCA_LOG (DEBUG, "Write failed: %d\n", result);
+      LCA_LOG (LCA_DEBUG, "Write failed: %d\n", result);
     }
 #endif
 
@@ -193,7 +193,7 @@ lca_serialize_command (struct Command_ATSHA204 *c, uint8_t **serialized)
 
   lca_print_command (c);
 
-  LCA_LOG (DEBUG,
+  LCA_LOG (LCA_DEBUG,
            "Total len: %d, count: %d, CRC_LEN: %d, CRC_OFFSET: %d\n",
            total_len, c->count, crc_len, crc_offset);
 
@@ -274,8 +274,8 @@ lca_read_and_validate (int fd, uint8_t *buf, unsigned int len)
   {
       lca_print_hex_string ("Status RSP", tmp, STATUS_RSP);
       status = lca_get_status_response (tmp);
-      LCA_LOG (DEBUG, status_to_string (status));
-      LCA_LOG (DEBUG, "Copying %d into buf", tmp[1]);
+      LCA_LOG (LCA_DEBUG, status_to_string (status));
+      LCA_LOG (LCA_DEBUG, "Copying %d into buf", tmp[1]);
       memcpy (buf, &tmp[1], 1);
 
   }
@@ -303,7 +303,7 @@ lca_read_and_validate (int fd, uint8_t *buf, unsigned int len)
     }
   else
     {
-      LCA_LOG (DEBUG,"Read failed: %d", read_bytes);
+      LCA_LOG (LCA_DEBUG,"Read failed: %d", read_bytes);
       status = RSP_NAK;
 
     }
@@ -334,7 +334,7 @@ lca_get_response (int fd, const int MAX_RECV_LEN, struct timespec wait_time)
       lca_print_hex_string ("Status RSP", tmp.ptr, STATUS_RSP_LEN);
       enum LCA_STATUS_RESPONSE status = RSP_COMM_ERROR;
       status = lca_get_status_response (tmp.ptr);
-      LCA_LOG (DEBUG, status_to_string (status));
+      LCA_LOG (LCA_DEBUG, status_to_string (status));
 
       rsp = tmp;
     }
@@ -353,13 +353,13 @@ lca_get_response (int fd, const int MAX_RECV_LEN, struct timespec wait_time)
         }
       else
         {
-          LCA_LOG (DEBUG, "Error reading rest of response.");
+          LCA_LOG (LCA_DEBUG, "Error reading rest of response.");
         }
     }
   /* Otherwise: Error */
   else
     {
-      LCA_LOG (DEBUG, "Read failed.");
+      LCA_LOG (LCA_DEBUG, "Read failed.");
     }
 
   /* Data is read, check the CRC before returning */
@@ -369,7 +369,7 @@ lca_get_response (int fd, const int MAX_RECV_LEN, struct timespec wait_time)
                                 rsp.len - LCA_CRC_16_LEN,
                                 rsp.ptr - LCA_CRC_16_LEN))
         {
-          LCA_LOG (DEBUG, "Received CRC checks out.");
+          LCA_LOG (LCA_DEBUG, "Received CRC checks out.");
           /* Strip off length byte and CRC and return just the data */
           struct lca_octet_buffer data =
             lca_make_buffer (rsp.len - LCA_CRC_16_LEN - 1);
@@ -380,13 +380,13 @@ lca_get_response (int fd, const int MAX_RECV_LEN, struct timespec wait_time)
         }
       else
         {
-          LCA_LOG (DEBUG, "Received CRC Failed!");
+          LCA_LOG (LCA_DEBUG, "Received CRC Failed!");
           lca_free_octet_buffer (rsp);
         }
     }
   else if (NULL != rsp.ptr && rsp.len <= LCA_CRC_16_LEN)
     {
-      LCA_LOG (DEBUG, "Message does not have a CRC");
+      LCA_LOG (LCA_DEBUG, "Message does not have a CRC");
       lca_free_octet_buffer (rsp);
     }
 
@@ -412,7 +412,7 @@ lca_send_and_get_rsp (int fd,
     }
   else
     {
-      LCA_LOG (DEBUG, "Send failed.");
+      LCA_LOG (LCA_DEBUG, "Send failed.");
     }
 
   return rsp;

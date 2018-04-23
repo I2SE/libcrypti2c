@@ -222,7 +222,7 @@ START_TEST(test_hmac)
 
     ck_assert(lca_gen_soft_keypair (&ecc));
 
-    lca_set_log_level(DEBUG);
+    lca_set_log_level(LCA_DEBUG);
     lca_print_sexp (ecc);
 
     ck_assert (0 == lca_soft_sign(&ecc, result, &sig));
@@ -381,7 +381,7 @@ START_TEST(test_ecdsa_key_pair)
   if ((err = gcry_pk_sign (&sig, hash, key)))
     die ("gcry_pk_sign failed: %s", gpg_strerror (err));
 
-  LCA_LOG (DEBUG, "Sign done");
+  LCA_LOG (LCA_DEBUG, "Sign done");
 
   lca_print_sexp (sig);
 
@@ -430,7 +430,7 @@ void lca_hard_coded(void)
 
   gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
 
-  gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u , 0);
+  gcry_control (GCRYCTL_SET_LCA_DEBUG_FLAGS, 1u , 0);
 
     static const char ecc_public_key[] =
     "(public-key\n"

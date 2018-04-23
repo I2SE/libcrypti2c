@@ -119,10 +119,10 @@ lca_print_command (struct Command_ATSHA204 *c)
 
   const char* opcode = NULL;
 
-  LCA_LOG (DEBUG, "*** Printing Command ***");
-  LCA_LOG (DEBUG, "Command: 0x%02X", c->command);
-  LCA_LOG (DEBUG, "Count: 0x%02X", c->count);
-  LCA_LOG (DEBUG, "OpCode: 0x%02X", c->opcode);
+  LCA_LOG (LCA_DEBUG, "*** Printing Command ***");
+  LCA_LOG (LCA_DEBUG, "Command: 0x%02X", c->command);
+  LCA_LOG (LCA_DEBUG, "Count: 0x%02X", c->count);
+  LCA_LOG (LCA_DEBUG, "OpCode: 0x%02X", c->opcode);
 
   switch (c->opcode)
     {
@@ -183,13 +183,13 @@ lca_print_command (struct Command_ATSHA204 *c)
     default:
       assert (false);
     }
-  LCA_LOG (DEBUG,"%s", opcode);
-  LCA_LOG (DEBUG,"param1: 0x%02X", c->param1);
-  LCA_LOG (DEBUG,"param2: 0x%02X 0x%02X", c->param2[0], c->param2[1]);
+  LCA_LOG (LCA_DEBUG,"%s", opcode);
+  LCA_LOG (LCA_DEBUG,"param1: 0x%02X", c->param1);
+  LCA_LOG (LCA_DEBUG,"param2: 0x%02X 0x%02X", c->param2[0], c->param2[1]);
   if (c->data_len > 0)
     lca_print_hex_string ("Data", c->data, c->data_len);
-  LCA_LOG (DEBUG,"CRC: 0x%02X 0x%02X", c->checksum[0], c->checksum[1]);
-  LCA_LOG (DEBUG,"Wait time: %ld seconds %lu nanoseconds",
+  LCA_LOG (LCA_DEBUG,"CRC: 0x%02X 0x%02X", c->checksum[0], c->checksum[1]);
+  LCA_LOG (LCA_DEBUG,"Wait time: %ld seconds %lu nanoseconds",
           c->wait_time.tv_sec, c->wait_time.tv_nsec);
 
 
@@ -206,7 +206,7 @@ lca_get_status_response(const uint8_t *rsp)
   if (!lca_is_crc_16_valid (rsp, STATUS_LENGTH - LCA_CRC_16_LEN,
                              rsp + OFFSET_TO_CRC))
     {
-      LCA_LOG (DEBUG, "CRC Fail in status response");
+      LCA_LOG (LCA_DEBUG, "CRC Fail in status response");
       return RSP_COMM_ERROR;
     }
 

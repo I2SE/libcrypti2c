@@ -103,9 +103,9 @@ genkey(int slot, int fd)
        is to generate two keys and discard the first. */
     pub_key = lca_gen_ecc_key (fd, slot, true);
 
-    lca_set_log_level (DEBUG);
+    lca_set_log_level (LCA_DEBUG);
     lca_print_hex_string ("Pub Key: ", pub_key.ptr, pub_key.len);
-    //lca_set_log_level (INFO);
+    //lca_set_log_level (LCA_INFO);
 }
 
 int
@@ -146,7 +146,7 @@ main (int argc, char **argv)
   x_buf.ptr = x; x_buf.len = sizeof(x);
   y_buf.ptr = y; y_buf.len = sizeof(y);
 
-  lca_set_log_level (DEBUG);
+  lca_set_log_level (LCA_DEBUG);
 
   lca_init ();
 

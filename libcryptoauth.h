@@ -32,10 +32,10 @@
 
 enum LCA_LOG_LEVEL
   {
-    SEVERE = 0,
-    WARNING,
-    INFO,
-    DEBUG
+    LCA_SEVERE = 0,
+    LCA_WARNING,
+    LCA_INFO,
+    LCA_DEBUG
   };
 
 void

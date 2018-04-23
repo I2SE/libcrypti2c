@@ -99,9 +99,9 @@ display_sig (const gcry_sexp_t* sig, const char *d_opt)
 
     if (0 == strcmp (d_opt, "sexp"))
     {
-        lca_set_log_level (DEBUG);
+        lca_set_log_level (LCA_DEBUG);
         lca_print_sexp (*sig);
-        lca_set_log_level (INFO);
+        lca_set_log_level (LCA_INFO);
     }
     else if (0 == strcmp (d_opt, "hex"))
     {
@@ -145,9 +145,9 @@ sign_file (const char *key_f, FILE *fp, gcry_sexp_t *sig, int show_digest)
 
     if (show_digest)
     {
-        lca_set_log_level (DEBUG);
+        lca_set_log_level (LCA_DEBUG);
         lca_print_sexp (digest);
-        lca_set_log_level (INFO);
+        lca_set_log_level (LCA_INFO);
     }
 
 

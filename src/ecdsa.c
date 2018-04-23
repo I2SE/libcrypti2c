@@ -29,14 +29,14 @@ lca_print_sexp (gcry_sexp_t to_print) {
   if (!lca_is_debug())
     return;
 
-  const int DEBUG_MAX_SIZE = 2048;
-  char * debug = malloc (DEBUG_MAX_SIZE);
-  memset (debug, 0, DEBUG_MAX_SIZE);
+  const int LCA_DEBUG_MAX_SIZE = 2048;
+  char * debug = malloc (LCA_DEBUG_MAX_SIZE);
+  memset (debug, 0, LCA_DEBUG_MAX_SIZE);
   int bytes = gcry_sexp_sprint (to_print,
                                 GCRYSEXP_FMT_ADVANCED,
                                 debug,
-                                DEBUG_MAX_SIZE);
-  LCA_LOG (DEBUG, "%d %s", bytes, debug);
+                                LCA_DEBUG_MAX_SIZE);
+  LCA_LOG (LCA_DEBUG, "%d %s", bytes, debug);
   free (debug);
 }
 
@@ -56,7 +56,7 @@ lca_ecdsa_p256_verify (struct lca_octet_buffer pub_key,
   assert (64 == signature.len);
   assert (32 == sha256_digest.len);
 
-  LCA_LOG (DEBUG, "Gcrypt init");
+  LCA_LOG (LCA_DEBUG, "Gcrypt init");
 
   gcry_sexp_t g_pub_key;
   gcry_sexp_t g_digest;
@@ -93,11 +93,11 @@ lca_ecdsa_p256_verify (struct lca_octet_buffer pub_key,
   lca_print_sexp( g_sig );
 
   rc = gcry_pk_verify (g_sig, g_digest, g_pub_key);
-  LCA_LOG (DEBUG, "verify complete");
+  LCA_LOG (LCA_DEBUG, "verify complete");
   if (0 != rc)
-    LCA_LOG (DEBUG, "gcry_pk_verify failed: %s", gpg_strerror (rc));
+    LCA_LOG (LCA_DEBUG, "gcry_pk_verify failed: %s", gpg_strerror (rc));
   else
-    LCA_LOG (DEBUG, "gcry_pk_verify success");
+    LCA_LOG (LCA_DEBUG, "gcry_pk_verify success");
 
   gcry_sexp_release (g_sig);
   gcry_sexp_release (g_digest);
@@ -150,7 +150,7 @@ lca_gen_soft_keypair (gcry_sexp_t *key)
       rc = gcry_pk_genkey (key, keyparam);
       if (rc)
         {
-          LCA_LOG (DEBUG, "gcry_pk_genkey failed: %s", gpg_strerror (rc));
+          LCA_LOG (LCA_DEBUG, "gcry_pk_genkey failed: %s", gpg_strerror (rc));
         }
       else
         {
@@ -273,7 +273,7 @@ lca_soft_sign (gcry_sexp_t *key_pair, struct lca_octet_buffer hash,
     "(data (flags raw)\n"
     " (value %b))";
 
-  lca_set_log_level(DEBUG);
+  lca_set_log_level(LCA_DEBUG);
   //  lca_print_sexp (key);
   lca_print_sexp (*key_pair);
 

@@ -62,7 +62,7 @@ lca_get_random (int fd, bool update_seed)
     }
   else
     {
-      LCA_LOG (DEBUG, "Random command failed");
+      LCA_LOG (LCA_DEBUG, "Random command failed");
       free (random_buf);
     }
 
@@ -259,7 +259,7 @@ lca_write32_cmd (const int fd,
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
   {
-    LCA_LOG (DEBUG, "Write 32 successful.");
+    LCA_LOG (LCA_DEBUG, "Write 32 successful.");
     if (0 == (int) recv)
       status = true;
   }
@@ -437,11 +437,11 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
       if (0 == response)
         {
           result = true;
-          LCA_LOG (DEBUG, "Lock Successful");
+          LCA_LOG (LCA_DEBUG, "Lock Successful");
         }
       else
         {
-          LCA_LOG (DEBUG, "Lock Failed");
+          LCA_LOG (LCA_DEBUG, "Lock Failed");
         }
     }
 
@@ -511,11 +511,11 @@ set_otp_zone (int fd, struct lca_octet_buffer *otp_zone)
 
   /* Fill in the data */
   buf.ptr = part1;
-  LCA_LOG (DEBUG, "Writing: %s", buf.ptr);
+  LCA_LOG (LCA_DEBUG, "Writing: %s", buf.ptr);
   if (success)
     success = lca_write32_cmd (fd, OTP_ZONE, 0, buf, NULL);
   buf.ptr = part2;
-  LCA_LOG (DEBUG, "Writing: %s", buf.ptr);
+  LCA_LOG (LCA_DEBUG, "Writing: %s", buf.ptr);
   if (success)
     success = lca_write32_cmd (fd, OTP_ZONE, SIZE_OF_WRITE / sizeof (uint32_t),
                                 buf, NULL);
@@ -630,7 +630,7 @@ lca_gen_nonce (int fd, struct lca_octet_buffer data)
 
   if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, buf.len))
     {
-      LCA_LOG (DEBUG, "Nonce command failed");
+      LCA_LOG (LCA_DEBUG, "Nonce command failed");
       lca_free_octet_buffer (buf);
       buf.ptr = NULL;
     }
@@ -727,12 +727,12 @@ lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_o
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &result, sizeof(result)))
     {
-      LCA_LOG (DEBUG, "GenDig success");
+      LCA_LOG (LCA_DEBUG, "GenDig success");
       return result == 0;
     }
   else
     {
-      LCA_LOG (DEBUG, "GenDig failure");
+      LCA_LOG (LCA_DEBUG, "GenDig failure");
     }
 
   return false;

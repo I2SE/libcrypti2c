@@ -91,7 +91,7 @@ lca_wakeup(int fd)
       if (write(fd,&wup,sizeof(wup)) > 1)
         {
 
-          LCA_LOG(DEBUG, "%s", "Device is awake.");
+          LCA_LOG(LCA_DEBUG, "%s", "Device is awake.");
           // Using I2C Read
           if (read(fd,buf,sizeof(buf)) != 4)
             {
@@ -177,10 +177,10 @@ lca_read_sleep(int fd,
     {
       if (0 > (bytes = read(fd, buf, len)))
         {
-          LCA_LOG (DEBUG, "lca_read_sleep failed, retrying");
+          LCA_LOG (LCA_DEBUG, "lca_read_sleep failed, retrying");
           if (0 != nanosleep (&wait_time , &tim_rem))
             {
-              LCA_LOG (DEBUG, "Irritably woken from peaceful slumber.");
+              LCA_LOG (LCA_DEBUG, "Irritably woken from peaceful slumber.");
             }
         }
 

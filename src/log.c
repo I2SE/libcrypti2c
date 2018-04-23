@@ -24,7 +24,7 @@
 #include <assert.h>
 #include "../libcryptoauth.h"
 
-static enum LCA_LOG_LEVEL CURRENT_LOG_LEVEL = INFO;
+static enum LCA_LOG_LEVEL CURRENT_LOG_LEVEL = LCA_INFO;
 
 void
 LCA_LOG(enum LCA_LOG_LEVEL lvl, const char *format, ...)
@@ -50,7 +50,7 @@ void
 lca_print_hex_string(const char *str, const uint8_t *hex, unsigned int len)
 {
 
-  if (CURRENT_LOG_LEVEL < DEBUG)
+  if (CURRENT_LOG_LEVEL < LCA_DEBUG)
     return;
 
   unsigned int i;
@@ -73,5 +73,5 @@ lca_print_hex_string(const char *str, const uint8_t *hex, unsigned int len)
 bool
 lca_is_debug (void)
 {
-  return (DEBUG == CURRENT_LOG_LEVEL) ? true : false;
+  return (LCA_DEBUG == CURRENT_LOG_LEVEL) ? true : false;
 }

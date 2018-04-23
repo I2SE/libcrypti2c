@@ -61,11 +61,11 @@ lca_gen_ecc_key (int fd, uint8_t key_id, bool private)
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, pub_key.ptr, pub_key.len))
     {
-      LCA_LOG (DEBUG, "Gen key success");
+      LCA_LOG (LCA_DEBUG, "Gen key success");
     }
   else
     {
-      LCA_LOG (DEBUG, "Gen key failure");
+      LCA_LOG (LCA_DEBUG, "Gen key failure");
       lca_free_octet_buffer (pub_key);
       pub_key.ptr = NULL;
     }
@@ -98,11 +98,11 @@ lca_ecc_sign (int fd, uint8_t key_id)
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, signature.ptr, signature.len))
     {
-      LCA_LOG (DEBUG, "Sign success");
+      LCA_LOG (LCA_DEBUG, "Sign success");
     }
   else
     {
-      LCA_LOG (DEBUG, "Sign failure");
+      LCA_LOG (LCA_DEBUG, "Sign failure");
       lca_free_octet_buffer (signature);
       signature.ptr = NULL;
     }
@@ -149,12 +149,12 @@ lca_ecc_verify (int fd,
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &result, sizeof(result)))
     {
-      LCA_LOG (DEBUG, "Verify success");
+      LCA_LOG (LCA_DEBUG, "Verify success");
       verified = true;
     }
   else
     {
-      LCA_LOG (DEBUG, "Verify failure");
+      LCA_LOG (LCA_DEBUG, "Verify failure");
     }
 
   lca_free_octet_buffer (payload);
@@ -196,11 +196,11 @@ lca_ecdh (int fd, uint8_t slot,
   if (RSP_SUCCESS == lca_process_command (fd, &c,
                                           shared_secret.ptr, shared_secret.len))
     {
-      LCA_LOG (DEBUG, "ECDH success");
+      LCA_LOG (LCA_DEBUG, "ECDH success");
     }
   else
     {
-      LCA_LOG (DEBUG, "ECDH failure");
+      LCA_LOG (LCA_DEBUG, "ECDH failure");
       lca_free_octet_buffer (shared_secret);
       shared_secret.ptr = NULL;
     }
@@ -307,7 +307,7 @@ lca_priv_write_cmd (const int fd,
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
   {
-    LCA_LOG (DEBUG, "Priv Write successful.");
+    LCA_LOG (LCA_DEBUG, "Priv Write successful.");
     if (0 == (int) recv)
       status = true;
   }

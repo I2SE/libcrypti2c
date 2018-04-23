@@ -115,7 +115,7 @@ main (int argc, char **argv)
       exit (1);
   }
 
-  lca_init_and_debug (INFO);
+  lca_init_and_debug (LCA_INFO);
 
   int fd = lca_atmel_setup (arguments.args[0], 0x60);
 
