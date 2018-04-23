@@ -259,8 +259,14 @@ lca_priv_write_cmd (const int fd,
       tempkey = calc_nonce(seed, rand_out, SEED_UPDATE_MODE);
 
       // send GenDig command
-      if (lca_gen_digest (fd, DATA_ZONE, write_key_slot, NULL))
-        return false;
+      if (!lca_gen_digest (fd, DATA_ZONE, write_key_slot, NULL))
+        {
+          lca_free_octet_buffer(seed);
+          lca_free_octet_buffer(rand_out);
+          lca_free_octet_buffer(tempkey);
+          lca_free_octet_buffer(data);
+          return false;
+        }
 
       // re-calc tempkey
       tempkey = calc_digest(write_key, DATA_ZONE, write_key_slot, tempkey);
