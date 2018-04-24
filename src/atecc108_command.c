@@ -267,9 +267,14 @@ lca_priv_write_cmd (const int fd,
       tempkey = calc_digest(write_key, DATA_ZONE, write_key_slot, tempkey);
 
       // calc cipher text
-      for (i = 0; i < priv_key.len; i++)
+      for (i = 0; i < 4; i++)
         {
-          data.ptr[i] = priv_key.ptr[i] ^ tempkey.ptr[i];
+          data.ptr[i] = 0x00 ^ tempkey.ptr[i];
+        }
+
+      for (i = 0; i < priv_key.len - 4; i++)
+        {
+          data.ptr[i+4] = priv_key.ptr[i] ^ tempkey.ptr[i+4];
         }
 
       session_key = lca_sha256_buffer (tempkey);
