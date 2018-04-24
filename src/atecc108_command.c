@@ -281,7 +281,7 @@ lca_priv_write_cmd (const int fd,
 
       for (i = 0; i < 4; i++)
         {
-          data.ptr[i+32] = priv_key.ptr[i+32] ^ session_key.ptr[i];
+          data.ptr[i+32] = priv_key.ptr[i+28] ^ session_key.ptr[i];
         }
 
       // calc MAC
