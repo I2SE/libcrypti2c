@@ -241,27 +241,22 @@ lca_priv_write_cmd (const int fd,
 
   if (encrypt)
     {
-      struct lca_octet_buffer tempkey = {0,0};
+      struct lca_octet_buffer tempkey;
       struct lca_octet_buffer rand_out = {0,0};
       struct lca_octet_buffer session_key;
-      struct lca_octet_buffer seed;
       struct lca_octet_buffer mac;
 
       assert (write_key_slot <= 15);
       assert (NULL != write_key.ptr);
       assert (32 == write_key.len);
 
-      seed = lca_make_random_buffer (20);
+      tempkey = lca_make_random_buffer (32);
 
-      rand_out = lca_gen_nonce (fd, seed);
-
-      // calc tempkey
-      tempkey = calc_nonce(seed, rand_out, SEED_UPDATE_MODE);
+      rand_out = lca_gen_nonce (fd, tempkey);
 
       // send GenDig command
       if (!lca_gen_digest (fd, DATA_ZONE, write_key_slot, NULL))
         {
-          lca_free_octet_buffer(seed);
           lca_free_octet_buffer(rand_out);
           lca_free_octet_buffer(tempkey);
           lca_free_octet_buffer(data);
@@ -293,7 +288,6 @@ lca_priv_write_cmd (const int fd,
       mac = calc_write_mac(priv_key, COMMAND_PRIV_WRITE, param1, slot, tempkey);
       memcpy (data.ptr + 36, mac.ptr, mac.len);
 
-      lca_free_octet_buffer(seed);
       lca_free_octet_buffer(session_key);
       lca_free_octet_buffer(rand_out);
       lca_free_octet_buffer(tempkey);
