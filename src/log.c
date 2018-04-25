@@ -58,7 +58,7 @@ lca_print_hex_string(const char *str, const uint8_t *hex, unsigned int len)
   assert(NULL != str);
   assert(NULL != hex);
 
-  printf("%s : ", str);
+  printf("%s[%u] : ", str, len);
 
   for (i = 0; i < len; i++)
     {
