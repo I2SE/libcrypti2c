@@ -203,6 +203,7 @@ calc_nonce(struct lca_octet_buffer seed,
   offset = copy_over (buf, &mode, sizeof(mode), offset);
   offset = copy_over (buf, &lsb_param2, sizeof(lsb_param2), offset);
 
+  assert(offset == len);
   lca_print_hex_string("Data to hash", buf, len);
   struct lca_octet_buffer data_to_hash = {buf, len};
   struct lca_octet_buffer digest;
@@ -325,6 +326,7 @@ calc_digest(struct lca_octet_buffer data,
         break;
     }
 
+  assert(offset == len);
   lca_print_hex_string("Data to hash", buf, len);
   struct lca_octet_buffer data_to_hash = {buf, len};
   struct lca_octet_buffer digest;
@@ -375,6 +377,7 @@ calc_write_mac(struct lca_octet_buffer data,
 	offset = copy_over (buf, zeros.ptr, zeros.len, offset);
 	offset = copy_over (buf, data.ptr, data.len, offset);
 
+	assert(offset == len);
 	lca_print_hex_string("Data to hash", buf, len);
 	struct lca_octet_buffer data_to_hash = {buf, len};
 	struct lca_octet_buffer digest;
