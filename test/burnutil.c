@@ -10,7 +10,7 @@ const char *argp_program_bug_address =
 
 /* Program documentation. */
 static char doc[] =
-  "Utility for burning the config and otp zones";
+  "Utility for burning the config, data and otp zones";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "BUS";
@@ -20,13 +20,18 @@ static char args_doc[] = "BUS";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-  {"verbose",  'v', 0,      0,  "Produce verbose output" },
-  {"quiet",    'q', 0,      0,  "Don't produce any output" },
-  {"silent",   's', 0,      OPTION_ALIAS },
-  {"lock",     'l', 0,      0,  "Locks zones"},
-  {"personalize",     'p', 0,      0,  "Fully personalizes device"},
-  {"file",     'f', "XMLFILE", 0,
-   "XML Memory configuration file" },
+  {"write_keys",   'a', 0,         0,  "Write all keys" },
+  {"write_config", 'c', 0,         0,  "Write config zone" },
+  {"file",         'f', "XMLFILE", 0,  "XML Memory configuration file" },
+  {"write_key",    'k', "SLOT",    0,  "Write key into slot" },
+  {"lock",         'l', 0,         0,  "Locks config zone"},
+  {"otp",          'o', 0,         0,  "Write and lock OTP zone" },
+  {"personalize",  'p', 0,         0,  "Fully personalizes device"},
+  {"quiet",        'q', 0,         0,  "Don't produce any output" },
+  {"print_serial", 's', 0,         0,  "Print device serial number" },
+  {"print_state",  't', 0,         0,  "Print device state" },
+  {"verbose",      'v', 0,         0,  "Produce verbose output" },
+  {"verify_key",   'y', "SLOT",    0,  "Verify key" },
   { 0 }
 };
 
@@ -34,8 +39,19 @@ static struct argp_option options[] = {
 struct arguments
 {
     char *args[NUM_ARGS];                /* arg1 & arg2 */
-    int silent, verbose, lock, personalize;
-    char *display, *input_file;
+    int quiet;
+    int write_config;
+    int write_keys;
+    int verify_keys;
+    int otp;
+    int verbose;
+    int lock;
+	int personalize;
+	int print_serial;
+	int print_state;
+	int slot;
+    char *display;
+	char *input_file;
 };
 
 /* Parse a single option. */
@@ -48,20 +64,43 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
-    case 'q': case 's':
-      arguments->silent = 1;
+    case 'a':
+      arguments->write_keys = 2;
       break;
-    case 'v':
-      arguments->verbose = 1;
+    case 'c':
+      arguments->write_config = 1;
+      break;
+    case 'f':
+      arguments->input_file = arg;
+      break;
+    case 'k':
+      arguments->write_keys = 1;
+      arguments->slot = atoi(arg);
       break;
     case 'l':
       arguments->lock = 1;
       break;
+    case 'o':
+      arguments->otp = 1;
+      break;
     case 'p':
-        arguments->personalize = 1;
-        break;
-    case 'f':
-      arguments->input_file = arg;
+      arguments->personalize = 1;
+      break;
+    case 'q':
+      arguments->quiet = 1;
+      break;
+    case 's':
+      arguments->print_serial = 1;
+      break;
+    case 't':
+      arguments->print_state = 1;
+      break;
+    case 'v':
+      arguments->verbose = 1;
+      break;
+    case 'y':
+      arguments->verify_keys = 1;
+      arguments->slot = atoi(arg);
       break;
 
     case ARGP_KEY_ARG:
@@ -98,18 +137,15 @@ main (int argc, char **argv)
   int i, rc = -1;
 
   /* Default values. */
-  arguments.silent = 0;
-  arguments.verbose = 0;
-  arguments.lock = 0;
-  arguments.personalize = 0;
-  arguments.input_file = NULL;
-
+  memset(&arguments, 0, sizeof(arguments));
 
   /* Parse our arguments; every option seen by parse_opt will
      be reflected in arguments. */
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-  if (NULL == arguments.input_file)
+  if ((0 == arguments.print_serial) &&
+	  (0 == arguments.print_state) &&
+	  (NULL == arguments.input_file))
   {
       printf("Need xml file\n");
       exit (1);
@@ -121,47 +157,45 @@ main (int argc, char **argv)
 
   if (fd < 0)
   {
-	  exit (1);
+      exit (1);
   }
 
-  int state = lca_get_device_state(fd);
-
-  printf("Device state: ");
-
-  switch (state)
+  if (arguments.print_state)
   {
-  	case STATE_FACTORY:
-  		printf("FACTORY\n");
-  		break;
-  	case STATE_INITIALIZED:
-  		printf("INITIALIZED\n");
-  		break;
-  	case STATE_PERSONALIZED:
-  		printf("PERSONALIZED\n");
-  		break;
-  	default:
-  		printf("UNKNOWN\n");
-        exit (1);
-  		break;
+      int state = lca_get_device_state(fd);
+
+	  switch (state)
+	    {
+		  case STATE_FACTORY:
+		    printf("FACTORY\n");
+		    break;
+		  case STATE_INITIALIZED:
+		    printf("INITIALIZED\n");
+		    break;
+		  case STATE_PERSONALIZED:
+	        printf("PERSONALIZED\n");
+		    break;
+		  default:
+            printf("UNKNOWN\n");
+            exit (1);
+            break;
+        }
   }
-
-  serial = lca_get_serial_num (fd);
-
-  printf("\nSerial number: ");
-
-  for (i = 0; i < serial.len; i++)
-    {
-      printf ("%02X ", serial.ptr[i]);
-    }
-
-  printf("\n");
-
-  lca_idle(fd);
-
-  if (arguments.personalize)
+  else if (arguments.print_serial)
   {
-      lca_wakeup(fd);
+      serial = lca_get_serial_num (fd);
 
+      printf ("%02X", serial.ptr[0]);
+
+      for (i = 1; i < serial.len; i++)
+      {
+        printf (":%02X", serial.ptr[i]);
+      }
+
+      printf("\n");
+  }
+  else if (arguments.personalize)
+  {
       rc = personalize (fd, arguments.input_file);
 
       lca_idle(fd);
@@ -194,7 +228,7 @@ main (int argc, char **argv)
 
       printf("\n");
   }
-  else
+  else if (arguments.write_config)
   {
       struct lca_octet_buffer result;
 
