@@ -810,6 +810,24 @@ lca_gen_digest (int fd,
                 struct lca_octet_buffer *other_data);
 
 /**
+ * Computes a SHA256 digest on the device. Depending on the mode
+ * parameter, this command will use a stored key, a provided challenge
+ * or the TempKey as input.
+ *
+ * @param fd The open file descriptor.
+ * @param mode The mode used for MAC generation
+ * @param key_id The key ID you want to use for input data.
+ * @param challenge Optional challenge for input
+ *
+ * @return True if successful.
+ */
+struct lca_octet_buffer
+lca_gen_mac(const int fd,
+            const uint8_t mode,
+            const uint16_t key_id,
+            const struct lca_octet_buffer *challenge);
+
+/**
  * Performs the nonce operation on the device.  Depending on the data
  * parameter, this command will either generate a new nonce or combine
  * an external value.

@@ -737,3 +737,39 @@ lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_o
 
   return false;
 }
+
+struct lca_octet_buffer
+lca_gen_mac(const int fd,
+            const uint8_t mode,
+            const uint16_t key_id,
+            const struct lca_octet_buffer *challenge)
+{
+  assert ((mode & 1) || (challenge && challenge->len == 32));
+
+  uint8_t param2[2] = {0};
+
+  param2[0] = key_id & 0xFF;
+  param2[1] = key_id >> 8;
+
+  struct Command_ATSHA204 c = make_command ();
+
+  set_opcode (&c, COMMAND_MAC);
+  set_param1 (&c, mode);
+  set_param2 (&c, param2);
+
+  if (mode & 1 == 0)
+    set_data (&c, challenge->ptr, challenge->len);
+
+  set_execution_time (&c, 0, MAC_MAX_EXEC);
+
+  struct lca_octet_buffer buf = lca_make_buffer (32);
+
+  if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, buf.len))
+    {
+	  LCA_LOG (LCA_DEBUG, "MAC failure");
+	  lca_free_octet_buffer (buf);
+	  buf.ptr = NULL;
+    }
+
+  return buf;
+}
