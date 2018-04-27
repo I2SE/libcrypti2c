@@ -280,6 +280,146 @@ lca_otp2bin(const char *docname, struct lca_octet_buffer *out)
   return rc;
 }
 
+static struct lca_octet_buffer
+parse_data_zone (xmlDocPtr doc, xmlNodePtr cur, uint8_t slot) {
+
+  xmlChar *key;
+  char *key_cp;
+  cur = cur->xmlChildrenNode;
+  int s, x = 0;
+  const char tok[] = " ";
+  char * token, * end;
+  unsigned long val;
+
+  struct lca_octet_buffer result = {0,0};
+
+  uint8_t *slot_buf = NULL;
+
+  while (cur != NULL)
+    {
+	  if ((xmlStrcmp(cur->name, (const xmlChar *)"Slot")))
+	    {
+		  cur = cur->next;
+		  continue;
+	    }
+
+      if (s < slot)
+		{
+          s++;
+          cur = cur->next;
+		  continue;
+		}
+
+      key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+      if (NULL != key)
+        {
+	      key_cp = strdup((const char *)key);
+	      token = strtok(key_cp, tok);
+
+
+	      while (token!=NULL)
+	        {
+              slot_buf = realloc (slot_buf, x + 1);
+		      assert (NULL != slot_buf);
+		      val = strtoul(token, &end, 16);
+
+		      if (val > 0xFF)
+		        goto OUT;
+
+		      if (*end != '\0')
+		        goto OUT;
+
+              slot_buf[x] = val;
+		      x+=1;
+
+		      // get the next token
+		      token = strtok(NULL, tok);
+
+	        }
+
+	        xmlFree(key);
+	        free(key_cp);
+        }
+
+      break;
+    }
+
+  result.ptr = slot_buf;
+  result.len = x;
+
+  return result;
+
+ OUT:
+  free(slot_buf);
+  xmlFree(key);
+  free(key_cp);
+
+  return result;
+}
+
+int
+lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out)
+{
+
+  xmlDocPtr doc;
+  xmlNodePtr cur;
+  struct lca_octet_buffer tmp;
+  int rc = -1;
+
+  assert (NULL != docname);
+  assert (NULL != out);
+
+  doc = xmlParseFile(docname);
+
+  if (doc == NULL)
+    {
+      fprintf(stderr,"Document not parsed successfully. \n");
+      rc = -2;
+      goto OUT;
+    }
+
+  cur = xmlDocGetRootElement(doc);
+
+  if (cur == NULL)
+    {
+      fprintf(stderr,"empty document\n");
+      rc = -3;
+      goto FREE;
+    }
+
+  if (xmlStrcmp(cur->name, (const xmlChar *) "ECC108Content.01") &&
+	  xmlStrcmp(cur->name, (const xmlChar *) "ECC508Content.01"))
+    {
+      fprintf(stderr,"document of unknown type, root node = <%s>\n", cur->name);
+      rc = -4;
+      goto FREE;
+    }
+
+  cur = cur->xmlChildrenNode;
+
+  while (cur != NULL)
+    {
+      if ((!xmlStrcmp(cur->name, (const xmlChar *)"DataZone")))
+        {
+          tmp = parse_data_zone (doc, cur, slot);
+          if (NULL != tmp.ptr)
+            {
+              out->ptr = tmp.ptr;
+              out->len = tmp.len;
+              rc = 0;
+            }
+
+        }
+
+      cur = cur->next;
+    }
+
+ FREE:
+  xmlFreeDoc(doc);
+ OUT:
+  return rc;
+}
+
 int
 lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
 {

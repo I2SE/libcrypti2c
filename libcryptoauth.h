@@ -941,6 +941,10 @@ lca_print_hex_string (const char *str, const uint8_t *hex, unsigned int len);
 enum LCA_STATUS_RESPONSE
 lca_get_status_response(const uint8_t *rsp);
 
+/* Data Zone Functions */
+int
+lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out);
+
 /* Configuration Zone Functions */
 int
 lca_config2bin(const char *docname, struct lca_octet_buffer *out);
