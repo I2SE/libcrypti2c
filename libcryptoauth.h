@@ -334,6 +334,26 @@ struct lca_octet_buffer
 lca_sha256_buffer (struct lca_octet_buffer data);
 
 /**
+ * Performs an offline verification of a MAC
+ *
+ * @param challenge The 32 Byte challenge / tempkey
+ * @param key The 32 byte key / tempkey
+ * @param mode The mode used for MAC generation
+ * @param key_id The key ID you want to use for input data.
+ *
+ * @return True if matched, otherwise false
+ */
+struct lca_octet_buffer
+perform_hash(struct lca_octet_buffer challenge,
+             struct lca_octet_buffer key,
+             uint8_t mode,
+			 uint16_t key_id,
+             struct lca_octet_buffer otp8,
+             struct lca_octet_buffer otp3,
+             struct lca_octet_buffer sn4,
+             struct lca_octet_buffer sn23);
+
+/**
  * Performs an offline verification of a MAC using the default settings.
  *
  * @param challenge The 32 Byte challenge

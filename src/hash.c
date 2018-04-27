@@ -114,10 +114,10 @@ copy_over (uint8_t *dst, const uint8_t *src, unsigned int src_len,
 }
 
 
-static struct lca_octet_buffer
+struct lca_octet_buffer
 perform_hash(struct lca_octet_buffer challenge,
              struct lca_octet_buffer key,
-             uint8_t mode, uint16_t param2,
+             uint8_t mode, uint16_t key_id,
              struct lca_octet_buffer otp8,
              struct lca_octet_buffer otp3,
              struct lca_octet_buffer sn4,
@@ -136,7 +136,7 @@ perform_hash(struct lca_octet_buffer challenge,
   const uint8_t sn2[] ={0x01, 0x23};
 
   unsigned int len = challenge.len + key.len + sizeof(opcode) + sizeof(mode)
-    + sizeof(param2) + otp8.len + otp3.len + sizeof(sn)  + sn4.len
+    + sizeof(key_id) + otp8.len + otp3.len + sizeof(sn)  + sn4.len
     + sizeof(sn2) + sn23.len;
 
   uint8_t *buf = lca_malloc_wipe(len);
@@ -146,7 +146,7 @@ perform_hash(struct lca_octet_buffer challenge,
   offset = copy_over (buf, challenge.ptr, challenge.len, offset);
   offset = copy_over (buf, &opcode, sizeof(opcode), offset);
   offset = copy_over (buf, &mode, sizeof(mode), offset);
-  offset = copy_over (buf, (uint8_t *)&param2, sizeof(param2), offset);
+  offset = copy_over (buf, (uint8_t *)&key_id, sizeof(key_id), offset);
   offset = copy_over (buf, otp8.ptr, otp8.len, offset);
   offset = copy_over (buf, otp3.ptr, otp3.len, offset);
   offset = copy_over (buf, &sn, sizeof(sn), offset);
