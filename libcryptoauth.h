@@ -941,11 +941,28 @@ lca_print_hex_string (const char *str, const uint8_t *hex, unsigned int len);
 enum LCA_STATUS_RESPONSE
 lca_get_status_response(const uint8_t *rsp);
 
+enum LCA_KEY_TYPE
+  {
+	LCA_B283_NIST_ECC_TYPE = 0x00,
+	LCA_K283_NIST_ECC_TYPE = 0x01,
+    LCA_P256_NIST_ECC_TYPE = 0x04,
+	LCA_NO_ECC_TYPE = 0x07
+  };
+
 /* Data Zone Functions */
 int
 lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out);
 
+int
+lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config);
+
 /* Configuration Zone Functions */
+bool
+lca_get_slot_config(uint8_t slot, struct lca_octet_buffer config, uint16_t *slot_config);
+
+bool
+lca_get_key_config(uint8_t slot, struct lca_octet_buffer config, uint16_t *key_config);
+
 int
 lca_config2bin(const char *docname, struct lca_octet_buffer *out);
 

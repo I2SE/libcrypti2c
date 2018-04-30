@@ -31,6 +31,11 @@
 #include "crc.h"
 #include "../libcryptoauth.h"
 
+enum LCA_KEY_TYPE
+lca_get_key_type(uint16_t key_config)
+{
+	return (key_config >> 2) & 0x7;
+}
 
 static struct lca_octet_buffer
 parse_config_zone (xmlDocPtr doc, xmlNodePtr cur) {
@@ -95,6 +100,40 @@ parse_config_zone (xmlDocPtr doc, xmlNodePtr cur) {
   free(key_cp);
 
   return result;
+}
+
+bool
+lca_get_slot_config(uint8_t slot, struct lca_octet_buffer config, uint16_t *slot_config)
+{
+  if (slot > 15)
+    return false;
+
+  if (!config.ptr)
+    return false;
+
+  if (config.len != 128)
+    return false;
+
+  *slot_config  = config.ptr[slot * 2 + 20] | config.ptr[slot * 2 + 21] << 8;
+
+  return true;
+}
+
+bool
+lca_get_key_config(uint8_t slot, struct lca_octet_buffer config, uint16_t *key_config)
+{
+  if (slot > 15)
+    return false;
+
+  if (!config.ptr)
+    return false;
+
+  if (config.len != 128)
+    return false;
+
+  *key_config  = config.ptr[slot * 2 + 96] | config.ptr[slot * 2 + 97] << 8;
+
+  return true;
 }
 
 int
@@ -417,6 +456,64 @@ lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out)
  FREE:
   xmlFreeDoc(doc);
  OUT:
+  return rc;
+}
+
+int
+lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config)
+{
+  struct lca_octet_buffer data;
+  struct lca_octet_buffer key;
+  struct lca_octet_buffer write_key;
+  uint8_t write_key_slot = (slot_config >> 8) & 0xF;
+  int rc = -3;
+
+  if (lca_slot2bin(config_file, key_slot, &data))
+	  return -1;
+
+  assert (data.ptr);
+  assert (data.len);
+
+  if (lca_slot2bin(config_file, write_key_slot, &write_key))
+	  return -1;
+
+  if ((data.len == 36) &&
+      (slot_config & (1 << 14)) &&
+      (key_config & (1 << 0)) &&
+	  (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
+    {
+	  /* ECC private key */
+	  key.ptr = &data.ptr[4];
+	  key.len = data.len - 4;
+	  write_key.len -= 4;
+	  rc = lca_priv_write_cmd(fd, true, key_slot, key, write_key_slot, write_key) ? 0 : -2;
+    }
+  else if ((data.len == 72) &&
+		   (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
+    {
+	  /* ECC public key */
+	  rc = lca_write_pub_ecc_key (fd, false, key_slot, key, write_key_slot, write_key) ? 0 : -2;
+    }
+  else
+    {
+	  struct lca_octet_buffer block = lca_make_buffer (32);
+      uint16_t addr;
+      bool result;
+      size_t i, len;
+
+      rc = 0;
+
+      for (i = 0; i < data.len; i += block.len)
+        {
+    	  memset(&block.ptr[0], 0, block.len);
+    	  len = (i > 32) ? 32 : i;
+          memcpy(&block.ptr[0], &data.ptr[i], len);
+          addr = data_slot_to_addr(key_slot, i);
+    	  if (!lca_write32_cmd (fd, DATA_ZONE, addr, block, NULL))
+            rc = -2;
+        }
+    }
+
   return rc;
 }
 
