@@ -286,7 +286,7 @@ parse_data_zone (xmlDocPtr doc, xmlNodePtr cur, uint8_t slot) {
   xmlChar *key;
   char *key_cp;
   cur = cur->xmlChildrenNode;
-  int s, x = 0;
+  int s = 0, x = 0;
   const char tok[] = " ";
   char * token, * end;
   unsigned long val;
