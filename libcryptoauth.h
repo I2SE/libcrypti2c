@@ -555,21 +555,36 @@ struct lca_octet_buffer
 lca_ecc_sign (int fd,
                    uint8_t key_id);
 
+enum LCA_VERIFY_MODE
+  {
+	LCA_STORED_MODE = 0,
+	LCA_VALIDATE_EXTERNAL_MODE = 1,
+	LCA_EXTERNAL_MODE = 2,
+	LCA_VALIDATE_MODE = 3,
+	LCA_INVALIDATE_MODE = 7
+  };
+
 /**
  * Verifies an ECDSA Signature. Requires that the data, which was
  * signed, was first loaded with the nonce command.
  *
  * @param fd The open file descriptor.
+ * @param mode The mode used for verification
+ * @param key_id The key ID on which to operate.
  * @param pub_key The Public Key matching the private key that signed
- * the data.
+ * the data (only required in external mode).
  * @param signature The resultant signature.
+ * @param other_data The data to generate the message for Validation mode
  *
  * @return True if the signature is valid otherwise false
  */
 bool
-lca_ecc_verify (int fd,
-                     struct lca_octet_buffer pub_key,
-                     struct lca_octet_buffer signature);
+lca_ecc_verify (const int fd,
+                const enum LCA_VERIFY_MODE mode,
+                const uint16_t key_id,
+                const struct lca_octet_buffer pub_key,
+                const struct lca_octet_buffer signature,
+				const struct lca_octet_buffer other_data);
 
 /**
  * Compute the master secret from ECDH between the passed in public

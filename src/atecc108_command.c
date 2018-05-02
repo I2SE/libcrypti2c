@@ -114,27 +114,52 @@ lca_ecc_sign (int fd, uint8_t key_id)
 
 
 bool
-lca_ecc_verify (int fd,
-                 struct lca_octet_buffer pub_key,
-                 struct lca_octet_buffer signature)
+lca_ecc_verify (const int fd,
+                const enum LCA_VERIFY_MODE mode,
+                const uint16_t key_id,
+                const struct lca_octet_buffer pub_key,
+                const struct lca_octet_buffer signature,
+				const struct lca_octet_buffer other_data)
 {
 
   assert (NULL != signature.ptr);
   assert (64 == signature.len); /* P256 signatures are 64 bytes */
 
-  assert (NULL != pub_key.ptr);
-  assert (64 == pub_key.len); /* P256 Public Keys are 64 bytes */
-
   uint8_t param2[2] = {0};
-  uint8_t param1 = 0x02; /* Currently only support external keys */
 
-  param2[0] = 0x04; /* Currently only support P256 Keys */
+  struct lca_octet_buffer payload;
 
-  struct lca_octet_buffer payload =
-    lca_make_buffer (signature.len + pub_key.len);
-
-  memcpy (payload.ptr, signature.ptr, signature.len);
-  memcpy (payload.ptr + signature.len, pub_key.ptr, pub_key.len);
+  switch (mode)
+    {
+      case LCA_STORED_MODE:
+      case LCA_VALIDATE_EXTERNAL_MODE:
+    	assert (key_id <= 15);
+    	param2[0] = key_id & 0xFF;
+    	payload = lca_make_buffer (signature.len);
+    	memcpy (payload.ptr, signature.ptr, signature.len);
+        break;
+      case LCA_EXTERNAL_MODE:
+    	assert (NULL != pub_key.ptr);
+    	assert (64 == pub_key.len); /* P256 Public Keys are 64 bytes */
+    	param2[0] = 0x04; /* Currently only support P256 Keys */
+    	payload = lca_make_buffer (signature.len + pub_key.len);
+    	memcpy (payload.ptr, signature.ptr, signature.len);
+    	memcpy (payload.ptr + signature.len, pub_key.ptr, pub_key.len);
+        break;
+      case LCA_VALIDATE_MODE:
+      case LCA_INVALIDATE_MODE:
+        assert (NULL != other_data.ptr);
+        assert (19 == other_data.len);
+        assert (key_id <= 15);
+        param2[0] = key_id & 0xFF;
+        payload = lca_make_buffer (signature.len + other_data.len);
+        memcpy (payload.ptr, signature.ptr, signature.len);
+        memcpy (payload.ptr + signature.len, other_data.ptr, other_data.len);
+        break;
+      default:
+        assert(false);
+        break;
+    }
 
   uint8_t result = 0xFF;
   bool verified = false;
@@ -142,7 +167,7 @@ lca_ecc_verify (int fd,
   struct Command_ATSHA204 c = make_command ();
 
   set_opcode (&c, COMMAND_ECC_VERIFY);
-  set_param1 (&c, param1);
+  set_param1 (&c, mode);
   set_param2 (&c, param2);
   set_data (&c, payload.ptr, payload.len);
   set_execution_time (&c, 0, ECC_VERIFY_MAX_EXEC);
