@@ -194,6 +194,19 @@ main (int argc, char **argv)
 
       printf("\n");
   }
+  else if (arguments.write_keys == 1)
+  {
+	  struct lca_octet_buffer config;
+	  struct lca_octet_buffer slot_data;
+	  uint16_t slot_config;
+	  uint16_t key_config;
+
+	  assert (lca_config2bin(arguments.input_file, &config) == 0);
+	  assert (lca_get_slot_config(arguments.slot, config, &slot_config));
+	  assert (lca_get_key_config(arguments.slot, config, &key_config));
+
+	  lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config);
+  }
   else if (arguments.personalize)
   {
       rc = personalize (fd, arguments.input_file);
