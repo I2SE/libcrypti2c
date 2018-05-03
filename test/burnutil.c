@@ -1,318 +1,363 @@
+/*
+ * Copyright (C) 2018 I2SE GmbH
+ *
+ * This file is part of libcryptoauth.
+ *
+ * libcryptoauth is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * libcryptoauth is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libcryptoauth.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#define _GNU_SOURCE
 #include <stdlib.h>
-#include <argp.h>
-#include <assert.h>
-#include "../libcryptoauth.h"
+#include <stdbool.h>
+#include <strings.h>
+#include <getopt.h>
+#include <errno.h>
 
-const char *argp_program_version =
-  "burnutil 0.2";
-const char *argp_program_bug_address =
-  "<bugs@cryptotronix.com>";
+#include "config.h"
+#include "libcryptoauth.h"
 
-/* Program documentation. */
-static char doc[] =
-  "Utility for burning the config, data and otp zones";
+#define NO_EXIT -1
+#define OPTIONS_DEFAULT_DEVICE "/dev/i2c-0"
 
-/* A description of the arguments we accept. */
-static char args_doc[] = "BUS";
-
-/* Number of required args */
-#define NUM_ARGS 1
-
-/* The options we understand. */
-static struct argp_option options[] = {
-  {"write_keys",   'a', 0,         0,  "Write all keys" },
-  {"write_config", 'c', 0,         0,  "Write config zone" },
-  {"file",         'f', "XMLFILE", 0,  "XML Memory configuration file" },
-  {"write_key",    'k', "SLOT",    0,  "Write key into slot" },
-  {"lock",         'l', 0,         0,  "Locks config zone"},
-  {"otp",          'o', 0,         0,  "Write and lock OTP zone" },
-  {"personalize",  'p', 0,         0,  "Fully personalizes device"},
-  {"quiet",        'q', 0,         0,  "Don't produce any output" },
-  {"print_serial", 's', 0,         0,  "Print device serial number" },
-  {"print_state",  't', 0,         0,  "Print device state" },
-  {"verbose",      'v', 0,         0,  "Produce verbose output" },
-  {"verify_key",   'y', "SLOT",    0,  "Verify key" },
-  { 0 }
+/* command line options */
+const struct option long_options[] = {
+    { "file",               required_argument, 0, 'f' },
+    { "device",             required_argument, 0, 'd' },
+    { "verbose",            no_argument,       0, 'v' },
+    { "version",            no_argument,       0, 'V' },
+    { "help",               no_argument,       0, 'h' },
+    {} /* stop condition for iterator */
 };
 
-/* Used by main to communicate with parse_opt. */
-struct arguments
-{
-    char *args[NUM_ARGS];                /* arg1 & arg2 */
-    int quiet;
-    int write_config;
-    int write_keys;
-    int verify_keys;
-    int otp;
-    int verbose;
-    int lock;
-    int personalize;
-    int print_serial;
-    int print_state;
-    int slot;
-    char *display;
-    char *input_file;
+/* descriptions for the command line options */
+const char *long_options_descs[] = {
+    "use given XML file with memory configuration (no default)",
+    "I2C device to use (default: " OPTIONS_DEFAULT_DEVICE ")",
+    "switch on verbose output (default: off)",
+    "print version and exit",
+    "print this usage and exit",
+    NULL /* stop condition for iterator */
 };
 
-/* Parse a single option. */
-static error_t
-parse_opt (int key, char *arg, struct argp_state *state)
+int usage(const char *p, int exitcode)
 {
-  /* Get the input argument from argp_parse, which we
-     know is a pointer to our arguments structure. */
-  struct arguments *arguments = state->input;
+    const char **desc = long_options_descs;
+    const struct option *op = long_options;
 
-  switch (key)
-    {
-    case 'a':
-      arguments->write_keys = 2;
-      break;
-    case 'c':
-      arguments->write_config = 1;
-      break;
-    case 'f':
-      arguments->input_file = arg;
-      break;
-    case 'k':
-      arguments->write_keys = 1;
-      arguments->slot = atoi(arg);
-      break;
-    case 'l':
-      arguments->lock = 1;
-      break;
-    case 'o':
-      arguments->otp = 1;
-      break;
-    case 'p':
-      arguments->personalize = 1;
-      break;
-    case 'q':
-      arguments->quiet = 1;
-      break;
-    case 's':
-      arguments->print_serial = 1;
-      break;
-    case 't':
-      arguments->print_state = 1;
-      break;
-    case 'v':
-      arguments->verbose = 1;
-      break;
-    case 'y':
-      arguments->verify_keys = 1;
-      arguments->slot = atoi(arg);
-      break;
+    fprintf(stderr,
+            "%s (%s) -- Utility for burning the configuration, data and OTP zones of an Atmel crypto chip\n\n"
+            "Usage: %s [<options>] <command> [<parameter>...]\n\n"
+            "Commands:\n"
+            "\tprint-serial            print crypto chip's serial number\n"
+            "\n"
+            "\tprint-state             print crypto chip's current state, i.e. one of the strings:\n"
+            "\t                        FACTORY, INITIALIZED, PERSONALIZED or UNKNOWN\n"
+            "\n"
+            "\twrite-key <slot>        write a single slot\n"
+            "\n"
+            "\twrite-keys              write all slots as defined in XML configuration\n"
+            "\n"
+            "\tverify-key <slot>       verify a single slot using slot information provided in\n"
+            "\t                        XML configuration file and print OK or FAILED\n"
+            "\n"
+            "\twrite-config            only write configuration zone\n"
+            "\n"
+            "\tlock-config             lock configuration zone\n"
+            "\n"
+            "\totp                     write OTP zone lock it\n"
+            "\n"
+            "\tpersonalize             write configuration, OTP and data zones and lock all zones\n"
+            "\n"
+            "Parameters:\n"
+            "\t<slot>                  integer in the range 0-15\n"
+            "\n"
+            "Options:\n",
+            p, PACKAGE_STRING, p);
 
-    case ARGP_KEY_ARG:
-      if (state->arg_num >= NUM_ARGS)
-        /* Too many arguments. */
-        argp_usage (state);
-
-      arguments->args[state->arg_num] = arg;
-
-      break;
-
-    case ARGP_KEY_END:
-      if (state->arg_num < NUM_ARGS)
-        /* Not enough arguments. */
-        argp_usage (state);
-      break;
-
-    default:
-      return ARGP_ERR_UNKNOWN;
+    while (op->name && desc) {
+        fprintf(stderr, "\t-%c, --%-12s\t%s\n", op->val, op->name, *desc);
+        op++; desc++;
     }
-  return 0;
+
+    fprintf(stderr, "\n");
+    if (exitcode != NO_EXIT)
+        exit(exitcode);
+
+    return exitcode;
 }
 
-/* Our argp parser. */
-static struct argp argp = { options, parse_opt, args_doc, doc };
-
-
-
-int
-main (int argc, char **argv)
+int write_single_slot(int fd, const char *xmlfile, int slot, struct lca_octet_buffer config)
 {
-  struct arguments arguments;
-  struct lca_octet_buffer serial;
-  int i, rc = 1;
+    struct lca_octet_buffer slot_data;
+    uint16_t slot_config, key_config;
 
-  /* Default values. */
-  memset(&arguments, 0, sizeof(arguments));
+    lca_get_slot_config(slot, config, &slot_config);
+    lca_get_key_config(slot, config, &key_config);
 
-  /* Parse our arguments; every option seen by parse_opt will
-     be reflected in arguments. */
-  argp_parse (&argp, argc, argv, 0, 0, &arguments);
+    return lca_write_key(fd, slot, xmlfile, slot_config, key_config);
+}
 
-  if ((0 == arguments.print_serial) &&
-      (0 == arguments.print_state) &&
-      (NULL == arguments.input_file))
-  {
-      printf("Need xml file\n");
-      exit (1);
-  }
+int main(int argc, char *argv[])
+{
+    int rv = EXIT_FAILURE;
+    char *xmlfile, *device = OPTIONS_DEFAULT_DEVICE;
+    bool verbose = false;
+    int fd = -1;
 
-  lca_init_and_debug (arguments.verbose ? LCA_DEBUG : LCA_INFO);
+    while (1) {
+        int c = getopt_long(argc, argv, "d:f:vVh", long_options, NULL);
 
-  int fd = lca_atmel_setup (arguments.args[0], 0x60);
+        /* detect the end of the options */
+        if (c == -1) break;
 
-  if (fd < 0)
-  {
-      exit (1);
-  }
-
-  if (arguments.print_state)
-  {
-      int state = lca_get_device_state(fd);
-
-      switch (state)
-        {
-          case STATE_FACTORY:
-            printf("FACTORY\n");
-            rc = 0;
-            break;
-          case STATE_INITIALIZED:
-            printf("INITIALIZED\n");
-            rc = 0;
-            break;
-          case STATE_PERSONALIZED:
-            printf("PERSONALIZED\n");
-            rc = 0;
-            break;
-          default:
-            printf("UNKNOWN\n");
-            break;
+        switch (c) {
+            case 'd':
+                device = optarg;
+                break;
+            case 'f':
+                xmlfile = optarg;
+                break;
+            case 'v':
+                verbose = true;
+                break;
+            case 'V':
+                printf("%s (%s)\n", argv[0], PACKAGE_STRING);
+                exit(EXIT_SUCCESS);
+            case '?':
+            case 'h':
+                rv = EXIT_SUCCESS;
+                /* fall-through */
+            default:
+                usage(argv[0], rv);
         }
-  }
-  else if (arguments.print_serial)
-  {
-      serial = lca_get_serial_num (fd);
+    }
 
-      if (serial.ptr)
-        {
+    /* adjust argc/argv to point to command and parameters after options */
+    argc -= optind;
+    argv += optind;
 
-          printf ("%02X", serial.ptr[0]);
+    /* we require at least the command (check this first to avoid null ptr deref in next check) */
+    if (argc < 1)
+        usage(program_invocation_short_name, rv);
 
-          for (i = 1; i < serial.len; i++)
-          {
-            printf (":%02X", serial.ptr[i]);
-          }
+    /* these commands need one parameter */
+    if (argc == 2 &&
+        (strcasecmp(argv[0], "write-key") == 0 ||
+         strcasecmp(argv[0], "verify-key") == 0))
+        goto cmdline_ok;
+    
+    /* all others need only command, no parameters */
+    if (argc == 1 &&
+        !(strcasecmp(argv[0], "write-key") == 0 ||
+          strcasecmp(argv[0], "verify-key") == 0))
+        goto cmdline_ok;
 
-          printf("\n");
+    /* this exits the program here */
+    usage(program_invocation_short_name, rv);
 
-          rc = 0;
+cmdline_ok:
+    if (!xmlfile &&
+        !(strcasecmp(argv[0], "print-serial") == 0 ||
+          strcasecmp(argv[0], "print-state") == 0 ||
+          strcasecmp(argv[0], "lock-config") == 0)) {
+        fprintf(stderr, "This operation requires an XML configuration file, but none given.\n");
+        return EXIT_FAILURE;
+    }
+
+    /* init library and open device */
+    lca_init_and_debug(verbose ? LCA_DEBUG : LCA_INFO);
+    fd = lca_atmel_setup(device, 0x60);
+    if (fd == -1) {
+        fprintf(stderr, "Error opening '%s': %m\n", device);
+        goto close_out;
+    }
+
+    /* run given command */
+    if (strcasecmp(argv[0], "print-serial") == 0) {
+        struct lca_octet_buffer serial;
+
+        serial = lca_get_serial_num(fd);
+
+        if (serial.ptr) {
+            int i;
+
+            printf("%02X", serial.ptr[0]);
+            for (i = 1; i < serial.len; i++)
+                printf(":%02X", serial.ptr[i]);
+
+            printf("\n");
+            rv = 0;
         }
-  }
-  else if (arguments.write_keys == 1)
-  {
-      struct lca_octet_buffer config;
-      struct lca_octet_buffer slot_data;
-      uint16_t slot_config;
-      uint16_t key_config;
 
-      assert (lca_config2bin(arguments.input_file, &config) == 0);
-      assert (lca_get_slot_config(arguments.slot, config, &slot_config));
-      assert (lca_get_key_config(arguments.slot, config, &key_config));
+    } else if (strcasecmp(argv[0], "print-state") == 0) {
+        rv = lca_get_device_state(fd);
 
-      if (0 == lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
-          rc = 0;
-  }
-  else if (arguments.personalize)
-  {
-      rc = personalize (fd, arguments.input_file);
+        switch (rv) {
+            case STATE_FACTORY:
+                printf("FACTORY\n");
+                break;
+            case STATE_INITIALIZED:
+                printf("INITIALIZED\n");
+                break;
+            case STATE_PERSONALIZED:
+                printf("PERSONALIZED\n");
+                break;
+            default:
+                printf("UNKNOWN\n");
+                break;
+        }
 
-      lca_idle(fd);
+        rv = 0;
 
-      sleep (1);
+    } else if (strcasecmp(argv[0], "write-key") == 0) {
+        struct lca_octet_buffer config;
+        int slot;
 
-      lca_wakeup(fd);
+        slot = atoi(argv[1]);
 
-      printf("\n");
+        if (lca_config2bin(xmlfile, &config) == 0) {
+            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            goto idle_out;
+        }
 
-      struct lca_octet_buffer response = get_otp_zone (fd);
-      if (NULL != response.ptr)
-        {
-          printf("Verify OTP:");
+        rv = write_single_slot(fd, xmlfile, slot, config);
 
-          for (i = 0; i < response.len; i++)
-            {
-              if (i % 4 == 0)
+    } else if (strcasecmp(argv[0], "write-keys") == 0) {
+        struct lca_octet_buffer config;
+        int slot;
+
+        if (lca_config2bin(xmlfile, &config) == 0) {
+            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            goto idle_out;
+        }
+
+        for (slot = 0; slot < 15; slot++) {
+            rv |= write_single_slot(fd, xmlfile, slot, config);
+        }
+
+    } else if (strcasecmp(argv[0], "verify-key") == 0) {
+        struct lca_octet_buffer config;
+        int slot;
+
+        slot = atoi(argv[1]);
+
+        if (lca_config2bin(xmlfile, &config) == 0) {
+            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            goto idle_out;
+        }
+
+        rv = 0; /* TODO */
+
+    } else if (strcasecmp(argv[0], "write-config") == 0) {
+        struct lca_octet_buffer config, result, response;
+        int i;
+
+        if (lca_config2bin(xmlfile, &config) == 0) {
+            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            goto idle_out;
+        }
+
+        rv = lca_burn_config_zone(fd, result);
+        if (rv) {
+            fprintf(stderr, "Error writing configuration zone.\n");
+            goto idle_out;
+        }
+
+        lca_idle(fd);
+
+        /* we need to wait until we can read back correct data */
+        sleep(1);
+
+        lca_wakeup(fd);
+
+        printf("\n"); /* FIXME */
+
+        response = get_config_zone(fd);
+        if (response.ptr == NULL) {
+            fprintf(stderr, "Unable to get configuration.\n");
+            goto idle_out;
+        }
+
+        printf("Verify configuration:");
+
+        for (i = 0; i < response.len; i++) {
+            if (i % 4 == 0)
                 printf("\n%04u : ", i);
 
-              printf ("%02X ", response.ptr[i]);
-            }
-
-          lca_free_octet_buffer (response);
-
-          rc = 0;
-        }
-      else
-        {
-          printf("Unable to get OTP");
+            if (result.ptr[i] == response.ptr[i])
+                printf("== ");
+            else
+                printf("%02X ", response.ptr[i]);
         }
 
-      printf("\n");
-  }
-  else if (arguments.write_config)
-  {
-      struct lca_octet_buffer result;
+        lca_free_octet_buffer(response);
 
-      assert (0 == lca_config2bin(arguments.input_file, &result));
+        printf("\n"); /* FIXME */
 
-      lca_wakeup(fd);
+    } else if (strcasecmp(argv[0], "lock-config") == 0) {
+        struct lca_octet_buffer result;
 
-      assert (0 == lca_burn_config_zone (fd, result));
+        rv = lca_lock_config_zone(fd, result);
 
-      lca_idle(fd);
+    } else if (strcasecmp(argv[0], "personalize") == 0) {
+        struct lca_octet_buffer response;
+        int i;
 
-      /* We need to wait until we can read back correct data */
-      sleep (1);
+        rv = personalize(fd, xmlfile);
+        if (rv) {
+            fprintf(stderr, "Failed to personalize the device.\n");
+            goto idle_out;
+        }
 
-      lca_wakeup(fd);
+        lca_idle(fd);
+        sleep (1);
+        lca_wakeup(fd);
 
-      printf("\n");
+        printf("\n"); /* FIXME */
 
-      struct lca_octet_buffer response = get_config_zone (fd);
-      if (NULL != response.ptr)
-        {
-          unsigned int i = 0;
+        response = get_otp_zone (fd);
+        if (response.ptr == NULL) {
+            fprintf(stderr, "Failed to get OTP zone.\n");
+            goto idle_out;
+        }
 
-          printf("Verify configuration:");
+        printf("Verify OTP:");
 
-          for (i = 0; i < response.len; i++)
-            {
-              if (i % 4 == 0)
+        for (i = 0; i < response.len; i++) {
+            if (i % 4 == 0)
                 printf("\n%04u : ", i);
 
-              if (result.ptr[i] == response.ptr[i])
-                printf ("== ");
-              else
-                printf ("%02X ", response.ptr[i]);
-            }
-
-          lca_free_octet_buffer (response);
-        }
-      else
-        {
-          printf("Unable to get configuration");
-          goto OUT;
+            printf ("%02X ", response.ptr[i]);
         }
 
-      printf("\n");
+        lca_free_octet_buffer(response);
 
-      lca_idle(fd);
-      lca_wakeup(fd);
+        rv = 0;
 
-      if (arguments.lock)
-          assert (0 == lca_lock_config_zone (fd, result));
+        printf("\n"); /* FIXME */
 
-      rc = 0;
-  }
+    } else {
+        usage(program_invocation_short_name, NO_EXIT);
+    }
 
-OUT:
+idle_out:
+    if (fd != -1)
+        lca_idle(fd);
 
-  lca_idle(fd);
+close_out:
+    if (fd != -1)
+        close(fd);
 
-  close (fd);
-
-  exit (rc);
+    return rv ? EXIT_FAILURE : EXIT_SUCCESS;
 }
