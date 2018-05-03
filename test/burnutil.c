@@ -134,7 +134,7 @@ main (int argc, char **argv)
 {
   struct arguments arguments;
   struct lca_octet_buffer serial;
-  int i, rc = -1;
+  int i, rc = 1;
 
   /* Default values. */
   memset(&arguments, 0, sizeof(arguments));
@@ -177,8 +177,7 @@ main (int argc, char **argv)
 		    break;
 		  default:
             printf("UNKNOWN\n");
-            exit (1);
-            break;
+            goto OUT;
         }
   }
   else if (arguments.print_serial)
@@ -283,7 +282,7 @@ main (int argc, char **argv)
       else
         {
           printf("Unable to get configuration");
-          exit (1);
+          goto OUT;
         }
 
       printf("\n");
@@ -296,6 +295,10 @@ main (int argc, char **argv)
 
       rc = 0;
   }
+
+OUT:
+
+  lca_idle(fd);
 
   close (fd);
 
