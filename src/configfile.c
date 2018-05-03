@@ -482,17 +482,15 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
       (key_config & (1 << 0)) &&
 	  (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
     {
+	  assert((0 == data.ptr[0]) && (0 == data.ptr[1]) && (0 == data.ptr[2]) && (0 == data.ptr[3]));
+
+	  printf("Writing ECC private key to slot %u\n", key_slot);
+
 	  /* ECC private key */
 	  key.ptr = &data.ptr[4];
 	  key.len = data.len - 4;
 	  write_key.len -= 4;
 	  rc = lca_priv_write_cmd(fd, true, key_slot, key, write_key_slot, write_key) ? 0 : -2;
-    }
-  else if ((data.len == 72) &&
-		   (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
-    {
-	  /* ECC public key */
-	  rc = lca_write_pub_ecc_key (fd, false, key_slot, key, write_key_slot, write_key) ? 0 : -2;
     }
   else
     {
@@ -500,6 +498,20 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
       uint16_t addr;
       bool result;
       size_t i, len;
+
+      if ((data.len == 72) &&
+          (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
+        {
+    	  /* ECC public key */
+    	  assert((0 == data.ptr[0]) && (0 == data.ptr[1]) && (0 == data.ptr[2]) && (0 == data.ptr[3]));
+    	  assert((0 == data.ptr[36]) && (0 == data.ptr[37]) && (0 == data.ptr[38]) && (0 == data.ptr[39]));
+
+    	  printf("Writing ECC public key to slot %u\n", key_slot);
+        }
+      else
+        {
+    	  printf("Writing data[%u] of type %d to slot %u\n", data.len, lca_get_key_type(key_config), key_slot);
+        }
 
       rc = 0;
 
