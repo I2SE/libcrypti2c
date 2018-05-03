@@ -503,7 +503,7 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
 
       rc = 0;
 
-      for (i = 0; i < data.len; i += block.len)
+      for (i = 0; i < data.len; )
         {
     	  memset(&block.ptr[0], 0, block.len);
     	  len = (data.len - i) > block.len ? block.len : (data.len - i);
