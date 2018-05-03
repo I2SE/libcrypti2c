@@ -275,7 +275,7 @@ lca_read_and_validate (int fd, uint8_t *buf, unsigned int len)
       lca_print_hex_string ("Status RSP", tmp, STATUS_RSP);
       status = lca_get_status_response (tmp);
       LCA_LOG (LCA_DEBUG, status_to_string (status));
-      LCA_LOG (LCA_DEBUG, "Copying %d into buf", tmp[1]);
+      LCA_LOG (LCA_DEBUG, "Copying %02X into buf", tmp[1]);
       memcpy (buf, &tmp[1], 1);
 
   }
