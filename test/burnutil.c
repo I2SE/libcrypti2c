@@ -168,30 +168,39 @@ main (int argc, char **argv)
 	    {
 		  case STATE_FACTORY:
 		    printf("FACTORY\n");
+		    rc = 0;
 		    break;
 		  case STATE_INITIALIZED:
 		    printf("INITIALIZED\n");
+		    rc = 0;
 		    break;
 		  case STATE_PERSONALIZED:
 	        printf("PERSONALIZED\n");
+	        rc = 0;
 		    break;
 		  default:
             printf("UNKNOWN\n");
-            goto OUT;
-        }
+            break;
+	    }
   }
   else if (arguments.print_serial)
   {
       serial = lca_get_serial_num (fd);
 
-      printf ("%02X", serial.ptr[0]);
+      if (serial.ptr)
+        {
 
-      for (i = 1; i < serial.len; i++)
-      {
-        printf (":%02X", serial.ptr[i]);
-      }
+          printf ("%02X", serial.ptr[0]);
 
-      printf("\n");
+          for (i = 1; i < serial.len; i++)
+          {
+            printf (":%02X", serial.ptr[i]);
+          }
+
+          printf("\n");
+
+          rc = 0;
+        }
   }
   else if (arguments.write_keys == 1)
   {
@@ -204,7 +213,8 @@ main (int argc, char **argv)
 	  assert (lca_get_slot_config(arguments.slot, config, &slot_config));
 	  assert (lca_get_key_config(arguments.slot, config, &key_config));
 
-	  lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config);
+	  if (0 == lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
+		  rc = 0;
   }
   else if (arguments.personalize)
   {
@@ -232,6 +242,8 @@ main (int argc, char **argv)
 	        }
 
 	      lca_free_octet_buffer (response);
+
+	      rc = 0;
         }
       else
         {
