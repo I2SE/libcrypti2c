@@ -971,6 +971,9 @@ lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out);
 int
 lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config);
 
+int
+lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config);
+
 /* Configuration Zone Functions */
 bool
 lca_get_slot_config(uint8_t slot, struct lca_octet_buffer config, uint16_t *slot_config);

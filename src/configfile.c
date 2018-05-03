@@ -538,6 +538,70 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
 }
 
 int
+lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config)
+{
+  struct lca_octet_buffer otp8 = lca_make_buffer (8);
+  struct lca_octet_buffer otp3 = lca_make_buffer (3);
+  struct lca_octet_buffer sn4 = lca_make_buffer (4);
+  struct lca_octet_buffer sn23 = lca_make_buffer (2);
+  struct lca_octet_buffer rand = lca_make_random_buffer (32);
+  struct lca_octet_buffer digest_host;
+  struct lca_octet_buffer digest_device;
+  struct lca_octet_buffer data;
+  struct lca_octet_buffer key;
+  struct lca_octet_buffer rsp;
+  int rc = -3;
+
+  if (lca_slot2bin(config_file, key_slot, &data))
+    {
+	  rc = -1;
+	  goto OUT;
+    }
+
+  assert (data.ptr);
+  assert (data.len >= 32);
+
+  key.ptr = &data.ptr[0];
+  key.len = 32;
+
+  digest_host = perform_hash(rand, key, 0x05, key_slot, otp8, otp3, sn4, sn23);
+
+  rsp = lca_gen_nonce (fd, rand);
+
+  digest_device = lca_gen_mac(fd, 0x05, key_slot, NULL);
+
+  if (digest_device.ptr)
+    {
+	  if (memcmp(digest_host.ptr, digest_device.ptr, digest_host.len))
+	    {
+		  rc = -2;
+	    }
+	  else
+	    {
+		  rc = 0;
+	    }
+    }
+  else
+    {
+	  rc = -1;
+    }
+
+  lca_free_octet_buffer(rsp);
+  lca_free_octet_buffer(digest_host);
+  lca_free_octet_buffer(digest_device);
+  lca_free_octet_buffer(data);
+
+OUT:
+  lca_free_octet_buffer(otp8);
+  lca_free_octet_buffer(otp3);
+  lca_free_octet_buffer(sn4);
+  lca_free_octet_buffer(sn23);
+  lca_free_octet_buffer(rand);
+
+  return rc;
+}
+
+int
 lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
 {
   bool config_locked = false;
