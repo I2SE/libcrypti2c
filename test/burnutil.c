@@ -46,12 +46,12 @@ struct arguments
     int otp;
     int verbose;
     int lock;
-	int personalize;
-	int print_serial;
-	int print_state;
-	int slot;
+    int personalize;
+    int print_serial;
+    int print_state;
+    int slot;
     char *display;
-	char *input_file;
+    char *input_file;
 };
 
 /* Parse a single option. */
@@ -144,8 +144,8 @@ main (int argc, char **argv)
   argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
   if ((0 == arguments.print_serial) &&
-	  (0 == arguments.print_state) &&
-	  (NULL == arguments.input_file))
+      (0 == arguments.print_state) &&
+      (NULL == arguments.input_file))
   {
       printf("Need xml file\n");
       exit (1);
@@ -164,24 +164,24 @@ main (int argc, char **argv)
   {
       int state = lca_get_device_state(fd);
 
-	  switch (state)
-	    {
-		  case STATE_FACTORY:
-		    printf("FACTORY\n");
-		    rc = 0;
-		    break;
-		  case STATE_INITIALIZED:
-		    printf("INITIALIZED\n");
-		    rc = 0;
-		    break;
-		  case STATE_PERSONALIZED:
-	        printf("PERSONALIZED\n");
-	        rc = 0;
-		    break;
-		  default:
+      switch (state)
+        {
+          case STATE_FACTORY:
+            printf("FACTORY\n");
+            rc = 0;
+            break;
+          case STATE_INITIALIZED:
+            printf("INITIALIZED\n");
+            rc = 0;
+            break;
+          case STATE_PERSONALIZED:
+            printf("PERSONALIZED\n");
+            rc = 0;
+            break;
+          default:
             printf("UNKNOWN\n");
             break;
-	    }
+        }
   }
   else if (arguments.print_serial)
   {
@@ -204,17 +204,17 @@ main (int argc, char **argv)
   }
   else if (arguments.write_keys == 1)
   {
-	  struct lca_octet_buffer config;
-	  struct lca_octet_buffer slot_data;
-	  uint16_t slot_config;
-	  uint16_t key_config;
+      struct lca_octet_buffer config;
+      struct lca_octet_buffer slot_data;
+      uint16_t slot_config;
+      uint16_t key_config;
 
-	  assert (lca_config2bin(arguments.input_file, &config) == 0);
-	  assert (lca_get_slot_config(arguments.slot, config, &slot_config));
-	  assert (lca_get_key_config(arguments.slot, config, &key_config));
+      assert (lca_config2bin(arguments.input_file, &config) == 0);
+      assert (lca_get_slot_config(arguments.slot, config, &slot_config));
+      assert (lca_get_key_config(arguments.slot, config, &key_config));
 
-	  if (0 == lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
-		  rc = 0;
+      if (0 == lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
+          rc = 0;
   }
   else if (arguments.personalize)
   {
@@ -234,16 +234,16 @@ main (int argc, char **argv)
           printf("Verify OTP:");
 
           for (i = 0; i < response.len; i++)
-	        {
-	          if (i % 4 == 0)
-		        printf("\n%04u : ", i);
+            {
+              if (i % 4 == 0)
+                printf("\n%04u : ", i);
 
-	          printf ("%02X ", response.ptr[i]);
-	        }
+              printf ("%02X ", response.ptr[i]);
+            }
 
-	      lca_free_octet_buffer (response);
+          lca_free_octet_buffer (response);
 
-	      rc = 0;
+          rc = 0;
         }
       else
         {
@@ -274,20 +274,20 @@ main (int argc, char **argv)
       struct lca_octet_buffer response = get_config_zone (fd);
       if (NULL != response.ptr)
         {
-    	  unsigned int i = 0;
+          unsigned int i = 0;
 
           printf("Verify configuration:");
 
-    	  for (i = 0; i < response.len; i++)
-    	    {
-    		  if (i % 4 == 0)
-    			printf("\n%04u : ", i);
+          for (i = 0; i < response.len; i++)
+            {
+              if (i % 4 == 0)
+                printf("\n%04u : ", i);
 
               if (result.ptr[i] == response.ptr[i])
-            	printf ("== ");
+                printf ("== ");
               else
-    		    printf ("%02X ", response.ptr[i]);
-    	    }
+                printf ("%02X ", response.ptr[i]);
+            }
 
           lca_free_octet_buffer (response);
         }
