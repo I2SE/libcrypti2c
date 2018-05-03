@@ -580,6 +580,8 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
 	    {
 		  rc = 0;
 	    }
+
+	  lca_free_octet_buffer(digest_device);
     }
   else
     {
@@ -588,7 +590,6 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
 
   lca_free_octet_buffer(rsp);
   lca_free_octet_buffer(digest_host);
-  lca_free_octet_buffer(digest_device);
   lca_free_octet_buffer(data);
 
 OUT:
