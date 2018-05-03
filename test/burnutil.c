@@ -97,6 +97,49 @@ int usage(const char *p, int exitcode)
     return exitcode;
 }
 
+enum cmds {
+    CMD_PRINT_SERIAL,
+    CMD_PRINT_STATE,
+    CMD_WRITE_KEY,
+    CMD_WRITE_KEYS,
+    CMD_VERIFY_KEY,
+    CMD_WRITE_CONFIG,
+    CMD_LOCK_CONFIG,
+    CMD_OTP,
+    CMD_PERSONALIZE,
+    /* keep last */
+    CMD_MAX
+};
+
+struct command {
+    const char *cmd;
+    int args;
+    bool needs_xmlfile;
+};
+
+const struct command commands[] = {
+    { "print-serial", 0, false },
+    { "print-state",  0, false },
+    { "write-key",    1, true  },
+    { "write-keys",   0, true  },
+    { "verify-key",   1, true  },
+    { "write-config", 0, true  },
+    { "lock-config",  0, false },
+    { "otp",          0, true  },
+    { "personalize",  0, true  },
+};
+
+int find_cmd(const char *command)
+{
+    int i;
+
+    for (i = 0; i < CMD_MAX; i++)
+        if (strcasecmp(commands[i].cmd, command) == 0)
+            break;
+
+    return i;
+}
+
 int write_single_slot(int fd, const char *xmlfile, int slot, struct lca_octet_buffer config)
 {
     struct lca_octet_buffer slot_data;
@@ -114,6 +157,7 @@ int main(int argc, char *argv[])
     char *xmlfile, *device = OPTIONS_DEFAULT_DEVICE;
     bool verbose = false;
     int fd = -1;
+    int cmd;
 
     while (1) {
         int c = getopt_long(argc, argv, "d:f:vVh", long_options, NULL);
@@ -147,31 +191,19 @@ int main(int argc, char *argv[])
     argc -= optind;
     argv += optind;
 
-    /* we require at least the command (check this first to avoid null ptr deref in next check) */
-    if (argc < 1)
+    /* we require at least the command (check this first to avoid null ptr deref
+     * in second check) and a valid command at all */
+    if (argc < 1 ||
+        (cmd = find_cmd(argv[0])) == CMD_MAX)
         usage(program_invocation_short_name, rv);
 
-    /* these commands need one parameter */
-    if (argc == 2 &&
-        (strcasecmp(argv[0], "write-key") == 0 ||
-         strcasecmp(argv[0], "verify-key") == 0))
-        goto cmdline_ok;
-    
-    /* all others need only command, no parameters */
-    if (argc == 1 &&
-        !(strcasecmp(argv[0], "write-key") == 0 ||
-          strcasecmp(argv[0], "verify-key") == 0))
-        goto cmdline_ok;
+    /* check parameter count for given command */
+    if (commands[cmd].args + 1 != argc)
+        usage(program_invocation_short_name, rv);
 
-    /* this exits the program here */
-    usage(program_invocation_short_name, rv);
-
-cmdline_ok:
-    if (!xmlfile &&
-        !(strcasecmp(argv[0], "print-serial") == 0 ||
-          strcasecmp(argv[0], "print-state") == 0 ||
-          strcasecmp(argv[0], "lock-config") == 0)) {
-        fprintf(stderr, "This operation requires an XML configuration file, but none given.\n");
+    /* check if command requires xml file */
+    if (!xmlfile && commands[cmd].needs_xmlfile) {
+        fprintf(stderr, "This command requires an XML configuration file, but none given.\n");
         return EXIT_FAILURE;
     }
 
@@ -184,7 +216,9 @@ cmdline_ok:
     }
 
     /* run given command */
-    if (strcasecmp(argv[0], "print-serial") == 0) {
+    switch (cmd) {
+
+    case CMD_PRINT_SERIAL: {
         struct lca_octet_buffer serial;
 
         serial = lca_get_serial_num(fd);
@@ -199,8 +233,10 @@ cmdline_ok:
             printf("\n");
             rv = 0;
         }
+    }
+        break;
 
-    } else if (strcasecmp(argv[0], "print-state") == 0) {
+    case CMD_PRINT_STATE:
         rv = lca_get_device_state(fd);
 
         switch (rv) {
@@ -219,8 +255,10 @@ cmdline_ok:
         }
 
         rv = 0;
+        break;
 
-    } else if (strcasecmp(argv[0], "write-key") == 0) {
+
+    case CMD_WRITE_KEY: {
         struct lca_octet_buffer config;
         int slot;
 
@@ -233,7 +271,10 @@ cmdline_ok:
 
         rv = write_single_slot(fd, xmlfile, slot, config);
 
-    } else if (strcasecmp(argv[0], "write-keys") == 0) {
+    }
+        break;
+
+    case CMD_WRITE_KEYS: {
         struct lca_octet_buffer config;
         int slot;
 
@@ -246,7 +287,10 @@ cmdline_ok:
             rv |= write_single_slot(fd, xmlfile, slot, config);
         }
 
-    } else if (strcasecmp(argv[0], "verify-key") == 0) {
+    }
+        break;
+
+    case CMD_VERIFY_KEY: {
         struct lca_octet_buffer config;
         int slot;
 
@@ -259,7 +303,10 @@ cmdline_ok:
 
         rv = 0; /* TODO */
 
-    } else if (strcasecmp(argv[0], "write-config") == 0) {
+    }
+        break;
+
+    case CMD_WRITE_CONFIG: {
         struct lca_octet_buffer config, result, response;
         int i;
 
@@ -304,13 +351,18 @@ cmdline_ok:
         lca_free_octet_buffer(response);
 
         printf("\n"); /* FIXME */
+    }
+        break;
 
-    } else if (strcasecmp(argv[0], "lock-config") == 0) {
+    case CMD_LOCK_CONFIG: {
         struct lca_octet_buffer result;
 
         rv = lca_lock_config_zone(fd, result);
 
-    } else if (strcasecmp(argv[0], "personalize") == 0) {
+    }
+        break;
+
+    case CMD_PERSONALIZE: {
         struct lca_octet_buffer response;
         int i;
 
@@ -347,7 +399,11 @@ cmdline_ok:
 
         printf("\n"); /* FIXME */
 
-    } else {
+    }
+        break;
+
+    default:
+        /* this cannot happen since we checked above */
         usage(program_invocation_short_name, NO_EXIT);
     }
 
