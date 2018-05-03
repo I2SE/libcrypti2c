@@ -475,7 +475,10 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
   assert (data.len);
 
   if (lca_slot2bin(config_file, write_key_slot, &write_key))
+    {
+	  lca_free_octet_buffer(data);
 	  return -1;
+    }
 
   if ((data.len == 36) &&
       (slot_config & (1 << 14)) &&
@@ -527,6 +530,9 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
     	  i += len;
         }
     }
+
+  lca_free_octet_buffer(write_key);
+  lca_free_octet_buffer(data);
 
   return rc;
 }
