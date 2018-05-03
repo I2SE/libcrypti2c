@@ -547,13 +547,18 @@ lca_get_serial_num (int fd)
   const uint16_t SERIAL_PART2_ADDR = 0x0002;
   const uint16_t SERIAL_PART3_ADDR = 0x0003;
 
-  read4 (fd, CONFIG_ZONE, SERIAL_PART1_ADDR, &word);
+  if (!read4 (fd, CONFIG_ZONE, SERIAL_PART1_ADDR, &word))
+	  goto FAIL;
+
   memcpy (serial.ptr, &word, sizeof (word));
 
-  read4 (fd, CONFIG_ZONE, SERIAL_PART2_ADDR, &word);
+  if (!read4 (fd, CONFIG_ZONE, SERIAL_PART2_ADDR, &word))
+	  goto FAIL;
+
   memcpy (serial.ptr + sizeof (word), &word, sizeof (word));
 
-  read4 (fd, CONFIG_ZONE, SERIAL_PART3_ADDR, &word);
+  if (!read4 (fd, CONFIG_ZONE, SERIAL_PART3_ADDR, &word))
+	  goto FAIL;
 
   uint8_t * ptr = (uint8_t *)&word;
 
@@ -561,6 +566,13 @@ lca_get_serial_num (int fd)
 
   return serial;
 
+FAIL:
+
+  lca_free_octet_buffer (serial);
+  serial.len = 0;
+  serial.ptr = NULL;
+
+  return serial;
 }
 
 
