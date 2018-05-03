@@ -19,6 +19,7 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <strings.h>
 #include <getopt.h>
@@ -291,7 +292,8 @@ int main(int argc, char *argv[])
         break;
 
     case CMD_VERIFY_KEY: {
-        struct lca_octet_buffer config;
+        struct lca_octet_buffer config, slot_data;
+        uint16_t slot_config, key_config;
         int slot;
 
         slot = atoi(argv[1]);
@@ -301,8 +303,11 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
-        rv = 0; /* TODO */
+        lca_get_slot_config(slot, config, &slot_config);
+        lca_get_key_config(slot, config, &key_config);
 
+        rv = lca_verify_key(fd, slot, xmlfile, slot_config, key_config);
+        printf(rv ? "FAILED\n" : "OK\n");
     }
         break;
 
