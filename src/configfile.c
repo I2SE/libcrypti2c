@@ -506,11 +506,13 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
       for (i = 0; i < data.len; i += block.len)
         {
     	  memset(&block.ptr[0], 0, block.len);
-    	  len = (i > 32) ? 32 : i;
+    	  len = (data.len - i) > block.len ? block.len : (data.len - i);
           memcpy(&block.ptr[0], &data.ptr[i], len);
           addr = data_slot_to_addr(key_slot, i);
     	  if (!lca_write32_cmd (fd, DATA_ZONE, addr, block, NULL))
             rc = -2;
+
+    	  i += len;
         }
     }
 
