@@ -216,27 +216,6 @@ main (int argc, char **argv)
 	  if (0 == lca_write_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
 		  rc = 0;
   }
-  else if (arguments.verify_keys == 1)
-  {
-	  struct lca_octet_buffer config;
-	  struct lca_octet_buffer slot_data;
-	  uint16_t slot_config;
-	  uint16_t key_config;
-
-	  assert (lca_config2bin(arguments.input_file, &config) == 0);
-	  assert (lca_get_slot_config(arguments.slot, config, &slot_config));
-	  assert (lca_get_key_config(arguments.slot, config, &key_config));
-
-	  if (0 == lca_verify_key(fd, arguments.slot, arguments.input_file, slot_config, key_config))
-	    {
-		  printf("OK\n");
-		  rc = 0;
-	    }
-	  else
-	    {
-		  printf("FAILED\n");
-	    }
-  }
   else if (arguments.personalize)
   {
       rc = personalize (fd, arguments.input_file);
