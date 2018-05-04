@@ -34,19 +34,12 @@ lca_build_otp_zone (void)
 {
     const int OTP_SIZE = 64;
     time_t tp;
-    struct lca_octet_buffer result = {0,0};
-
-    char *otp = malloc(OTP_SIZE);
-    assert (otp);
-    memset (otp, 0, OTP_SIZE);
+    struct lca_octet_buffer result = lca_make_buffer(OTP_SIZE);
 
     assert (time(&tp));
 
-    assert (snprintf(otp, OTP_SIZE, "CRYPTOTRONIX SV: %s, TOL: %s",
+    assert (snprintf(result.ptr, OTP_SIZE, "CRYPTOTRONIX SV: %s, TOL: %s",
                      PACKAGE_VERSION, ctime(&tp)));
-
-    result.ptr = (uint8_t *)otp;
-    result.len = OTP_SIZE;
 
     return result;
 }
