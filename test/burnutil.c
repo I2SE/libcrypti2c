@@ -259,6 +259,7 @@ int main(int argc, char *argv[])
 
             printf("\n");
             rv = 0;
+            lca_free_octet_buffer(serial);
         }
     }
         break;
@@ -301,6 +302,8 @@ int main(int argc, char *argv[])
 
         rv = write_single_slot(fd, xmlfile, slot, config);
 
+        lca_free_octet_buffer(config);
+
     }
         break;
 
@@ -316,6 +319,8 @@ int main(int argc, char *argv[])
         for (slot = 0; slot < 15; slot++) {
             rv |= write_single_slot(fd, xmlfile, slot, config);
         }
+
+        lca_free_octet_buffer(config);
 
     }
         break;
@@ -340,11 +345,12 @@ int main(int argc, char *argv[])
 
         rv = lca_verify_key(fd, slot, xmlfile, slot_config, key_config);
         printf(rv ? "FAILED\n" : "OK\n");
+        lca_free_octet_buffer(config);
     }
         break;
 
     case CMD_WRITE_CONFIG: {
-        struct lca_octet_buffer config, result, response;
+        struct lca_octet_buffer config, response;
         int i;
 
         if (lca_config2bin(xmlfile, &config) == 0) {
@@ -352,9 +358,10 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
-        rv = lca_burn_config_zone(fd, result);
+        rv = lca_burn_config_zone(fd, config);
         if (rv) {
             fprintf(stderr, "Error writing configuration zone.\n");
+            lca_free_octet_buffer(config);
             goto idle_out;
         }
 
@@ -370,6 +377,7 @@ int main(int argc, char *argv[])
         response = get_config_zone(fd);
         if (response.ptr == NULL) {
             fprintf(stderr, "Unable to get configuration.\n");
+            lca_free_octet_buffer(config);
             goto idle_out;
         }
 
@@ -379,12 +387,13 @@ int main(int argc, char *argv[])
             if (i % 4 == 0)
                 printf("\n%04u : ", i);
 
-            if (result.ptr[i] == response.ptr[i])
+            if (config.ptr[i] == response.ptr[i])
                 printf("== ");
             else
                 printf("%02X ", response.ptr[i]);
         }
 
+        lca_free_octet_buffer(config);
         lca_free_octet_buffer(response);
 
         printf("\n"); /* FIXME */
@@ -394,8 +403,7 @@ int main(int argc, char *argv[])
     case CMD_LOCK_CONFIG: {
         struct lca_octet_buffer result;
 
-        rv = lca_lock_config_zone(fd, result);
-
+        /* rv = lca_lock_config_zone(fd, result); FIXME */
     }
         break;
 
