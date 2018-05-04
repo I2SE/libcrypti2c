@@ -65,7 +65,7 @@ lca_gen_ecc_key (int fd, uint8_t key_id, bool private)
     }
   else
     {
-      LCA_LOG (LCA_DEBUG, "Gen key failure");
+      LCA_LOG (LCA_INFO, "Gen key failure");
       lca_free_octet_buffer (pub_key);
       pub_key.ptr = NULL;
     }
@@ -102,7 +102,7 @@ lca_ecc_sign (int fd, uint8_t key_id)
     }
   else
     {
-      LCA_LOG (LCA_DEBUG, "Sign failure");
+      LCA_LOG (LCA_INFO, "Sign failure");
       lca_free_octet_buffer (signature);
       signature.ptr = NULL;
     }
@@ -179,7 +179,7 @@ lca_ecc_verify (const int fd,
     }
   else
     {
-      LCA_LOG (LCA_DEBUG, "Verify failure");
+      LCA_LOG (LCA_INFO, "Verify failure");
     }
 
   lca_free_octet_buffer (payload);
@@ -225,7 +225,7 @@ lca_ecdh (int fd, uint8_t slot,
     }
   else
     {
-      LCA_LOG (LCA_DEBUG, "ECDH failure");
+      LCA_LOG (LCA_INFO, "ECDH failure");
       lca_free_octet_buffer (shared_secret);
       shared_secret.ptr = NULL;
     }
@@ -332,9 +332,13 @@ lca_priv_write_cmd (const int fd,
 
   if (RSP_SUCCESS == lca_process_command (fd, &c, &recv, sizeof (recv)))
   {
-    LCA_LOG (LCA_DEBUG, "Priv Write successful.");
+    LCA_LOG (LCA_DEBUG, "Priv Write success");
     if (0 == (int) recv)
       status = true;
+  }
+  else
+  {
+	LCA_LOG (LCA_INFO, "Priv Write failure");
   }
 
   if (NULL != c.data)
