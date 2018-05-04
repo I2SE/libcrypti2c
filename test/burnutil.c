@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
-        if (lca_config2bin(xmlfile, &config) == 0) {
+        if (lca_config2bin(xmlfile, &config)) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
             goto idle_out;
         }
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
         struct lca_octet_buffer config;
         int slot;
 
-        if (lca_config2bin(xmlfile, &config) == 0) {
+        if (lca_config2bin(xmlfile, &config)) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
             goto idle_out;
         }
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
-        if (lca_config2bin(xmlfile, &config) == 0) {
+        if (lca_config2bin(xmlfile, &config)) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
             goto idle_out;
         }
@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
         struct lca_octet_buffer config, response;
         int i;
 
-        if (lca_config2bin(xmlfile, &config) == 0) {
+        if (lca_config2bin(xmlfile, &config)) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
             goto idle_out;
         }
