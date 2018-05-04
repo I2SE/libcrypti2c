@@ -28,11 +28,16 @@
 #include "config.h"
 #include "libcryptoauth.h"
 
+#define __stringify_1(x...) #x
+#define __stringify(x...)   __stringify_1(x)
+
 #define NO_EXIT -1
 #define OPTIONS_DEFAULT_DEVICE "/dev/i2c-0"
+#define OPTIONS_DEFAULT_ADDRESS 0x60
 
 /* command line options */
 const struct option long_options[] = {
+    { "address",            required_argument, 0, 'a' },
     { "file",               required_argument, 0, 'f' },
     { "device",             required_argument, 0, 'd' },
     { "verbose",            no_argument,       0, 'v' },
@@ -43,6 +48,7 @@ const struct option long_options[] = {
 
 /* descriptions for the command line options */
 const char *long_options_descs[] = {
+    "use given I2C address (default: " __stringify(OPTIONS_DEFAULT_ADDRESS) ")",
     "use given XML file with memory configuration (no default)",
     "I2C device to use (default: " OPTIONS_DEFAULT_DEVICE ")",
     "switch on verbose output (default: off)",
@@ -152,21 +158,42 @@ int write_single_slot(int fd, const char *xmlfile, int slot, struct lca_octet_bu
     return lca_write_key(fd, slot, xmlfile, slot_config, key_config);
 }
 
+/* check whether there is garbage at the string end */
+int safe_strtol(const char *nptr, int base, int *value)
+{
+	long int v;
+	char *endptr;
+
+	v = strtol(nptr, &endptr, base);
+	if (*endptr)
+		return -1;
+
+	*value = v;
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
     int rv = EXIT_FAILURE;
     char *xmlfile, *device = OPTIONS_DEFAULT_DEVICE;
+    int address = OPTIONS_DEFAULT_ADDRESS;
     bool verbose = false;
     int fd = -1;
     int cmd;
 
     while (1) {
-        int c = getopt_long(argc, argv, "d:f:vVh", long_options, NULL);
+        int c = getopt_long(argc, argv, "a:d:f:vVh", long_options, NULL);
 
         /* detect the end of the options */
         if (c == -1) break;
 
         switch (c) {
+            case 'a':
+                if (safe_strtol(optarg, 0, &address)) {
+                    fprintf(stderr, "Error parsing I2C address '%s'.", optarg);
+                    return rv;
+                }
+                break;
             case 'd':
                 device = optarg;
                 break;
@@ -210,7 +237,7 @@ int main(int argc, char *argv[])
 
     /* init library and open device */
     lca_init_and_debug(verbose ? LCA_DEBUG : LCA_INFO);
-    fd = lca_atmel_setup(device, 0x60);
+    fd = lca_atmel_setup(device, address);
     if (fd == -1) {
         fprintf(stderr, "Error opening '%s': %m\n", device);
         goto close_out;
@@ -263,7 +290,10 @@ int main(int argc, char *argv[])
         struct lca_octet_buffer config;
         int slot;
 
-        slot = atoi(argv[1]);
+        if (safe_strtol(argv[1], 0, &slot)) {
+            fprintf(stderr, "Error parsing slot parameter.\n");
+            goto idle_out;
+        }
 
         if (lca_config2bin(xmlfile, &config) == 0) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
@@ -296,7 +326,10 @@ int main(int argc, char *argv[])
         uint16_t slot_config, key_config;
         int slot;
 
-        slot = atoi(argv[1]);
+        if (safe_strtol(argv[1], 0, &slot)) {
+            fprintf(stderr, "Error parsing slot parameter.\n");
+            goto idle_out;
+        }
 
         if (lca_config2bin(xmlfile, &config) == 0) {
             fprintf(stderr, "Error parsing XML configuration zone.\n");
