@@ -131,7 +131,7 @@ const struct command commands[] = {
     { "write-keys",   0, true  },
     { "verify-key",   1, true  },
     { "write-config", 0, true  },
-    { "lock-config",  0, false },
+    { "lock-config",  0, true  },
     { "otp",          0, true  },
     { "personalize",  0, true  },
 };
@@ -401,9 +401,16 @@ int main(int argc, char *argv[])
         break;
 
     case CMD_LOCK_CONFIG: {
-        struct lca_octet_buffer result;
+        struct lca_octet_buffer config;
 
-        /* rv = lca_lock_config_zone(fd, result); FIXME */
+        if (lca_config2bin(xmlfile, &config)) {
+            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            goto idle_out;
+        }
+
+        rv = lca_lock_config_zone(fd, config);
+
+        lca_free_octet_buffer(config);
     }
         break;
 
