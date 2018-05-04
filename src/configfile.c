@@ -529,6 +529,8 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
 
     	  i += len;
         }
+
+      lca_free_octet_buffer(block);
     }
 
   lca_free_octet_buffer(write_key);
