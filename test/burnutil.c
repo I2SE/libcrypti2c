@@ -149,7 +149,6 @@ int find_cmd(const char *command)
 
 int write_single_slot(int fd, const char *xmlfile, int slot, struct lca_octet_buffer config)
 {
-    struct lca_octet_buffer slot_data;
     uint16_t slot_config, key_config;
 
     lca_get_slot_config(slot, config, &slot_config);
@@ -175,7 +174,7 @@ int safe_strtol(const char *nptr, int base, int *value)
 int main(int argc, char *argv[])
 {
     int rv = EXIT_FAILURE;
-    char *xmlfile, *device = OPTIONS_DEFAULT_DEVICE;
+    char *xmlfile = NULL, *device = OPTIONS_DEFAULT_DEVICE;
     int address = OPTIONS_DEFAULT_ADDRESS;
     bool verbose = false;
     int fd = -1;
@@ -322,7 +321,7 @@ int main(int argc, char *argv[])
         break;
 
     case CMD_VERIFY_KEY: {
-        struct lca_octet_buffer config, slot_data;
+        struct lca_octet_buffer config;
         uint16_t slot_config, key_config;
         int slot;
 
