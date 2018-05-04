@@ -182,6 +182,9 @@ lca_ecc_verify (const int fd,
       LCA_LOG (LCA_INFO, "Verify failure");
     }
 
+  if (NULL != c.data)
+    free (c.data);
+
   lca_free_octet_buffer (payload);
 
   return verified;
@@ -340,6 +343,8 @@ lca_priv_write_cmd (const int fd,
   {
 	LCA_LOG (LCA_INFO, "Priv Write failure");
   }
+
+  lca_free_octet_buffer(data);
 
   if (NULL != c.data)
     free (c.data);

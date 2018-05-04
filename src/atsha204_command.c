@@ -662,6 +662,9 @@ lca_gen_nonce (int fd, struct lca_octet_buffer data)
       buf.ptr = NULL;
     }
 
+  if (NULL != c.data)
+    free (c.data);
+
   return buf;
 
 
@@ -762,6 +765,9 @@ lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_o
       LCA_LOG (LCA_INFO, "GenDig failure");
     }
 
+  if (NULL != c.data)
+    free (c.data);
+
   return false;
 }
 
@@ -797,6 +803,9 @@ lca_gen_mac(const int fd,
 	  lca_free_octet_buffer (buf);
 	  buf.ptr = NULL;
     }
+
+  if (NULL != c.data)
+    free (c.data);
 
   return buf;
 }
