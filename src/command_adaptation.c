@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "crc.h"
 #include <assert.h>
+#include <errno.h>
 #include "util.h"
 #include "../libcryptoauth.h"
 #include "command_util.h"
@@ -121,7 +122,11 @@ lca_send_and_receive (int fd,
 
   if (result > 1)
     {
-      nanosleep (wait_time , &tim_rem);
+      while ((nanosleep(wait_time, &tim_rem) == (-1)) && (errno == EINTR))
+        {
+          *wait_time = tim_rem;
+        }
+
       rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len);
       LCA_LOG (LCA_DEBUG, "Command Response: %s", status_to_string (rsp));
     }
