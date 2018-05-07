@@ -308,7 +308,11 @@ lca_read_and_validate (int fd, uint8_t *buf, unsigned int len)
     }
   else
     {
-      LCA_LOG (LCA_DEBUG,"Read failed: %d", read_bytes);
+	  if (read_bytes > 0)
+	    {
+          lca_print_hex_string ("Invalid RSP", tmp, read_bytes);
+	    }
+
       status = RSP_NAK;
 
     }
