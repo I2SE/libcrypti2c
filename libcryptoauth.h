@@ -1008,6 +1008,9 @@ int
 lca_burn_otp_zone (int fd, struct lca_octet_buffer otp_zone);
 
 int
+lca_burn_and_lock_otp_zone (int fd, const char *config_file);
+
+int
 personalize (int fd, const char *config_file);
 
 /* hkdf functions */

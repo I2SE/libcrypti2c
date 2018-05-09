@@ -80,6 +80,30 @@ lca_burn_otp_zone (int fd, struct lca_octet_buffer otp_zone)
     return rc;
 }
 
+int
+lca_burn_and_lock_otp_zone (int fd, const char *config_file)
+{
+    struct lca_octet_buffer otp;
+    int rc = -1;
+
+    rc = lca_otp2bin(config_file, &otp);
+    if (rc)
+        return -1;
+
+    rc = lca_burn_otp_zone (fd, otp);
+
+    lca_free_octet_buffer (otp);
+
+    if (!rc)
+    {
+        if (lock (fd, DATA_ZONE, 0))
+            rc = 0;
+        else
+            rc = -2;
+    }
+
+    return rc;
+}
 
 int
 personalize (int fd, const char *config_file)
@@ -114,22 +138,7 @@ personalize (int fd, const char *config_file)
 
     if (state == STATE_INITIALIZED)
     {
-        rc = lca_otp2bin(config_file, &otp);
-        if (rc)
-            goto OUT;
-
-        rc = lca_burn_otp_zone (fd, otp);
-
-        lca_free_octet_buffer (otp);
-
-        if (!rc)
-        {
-            if (lock (fd, DATA_ZONE, 0))
-                rc = 0;
-            else
-                rc = -2;
-        }
-
+        rc = lca_burn_and_lock_otp_zone (fd, config_file);
     }
 
 OUT:

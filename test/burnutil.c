@@ -438,6 +438,16 @@ int main(int argc, char *argv[])
     }
         break;
 
+    case CMD_OTP: {
+
+        rv = lca_burn_and_lock_otp_zone (fd, xmlfile);
+        if (rv) {
+            fprintf(stderr, "ERROR: Writing and locking OTP zone.\n");
+        }
+
+    }
+        break;
+
     case CMD_PERSONALIZE: {
         struct lca_octet_buffer response;
         int i;
