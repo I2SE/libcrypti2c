@@ -40,6 +40,7 @@ const struct option long_options[] = {
     { "address",            required_argument, 0, 'a' },
     { "file",               required_argument, 0, 'f' },
     { "device",             required_argument, 0, 'd' },
+    { "encrypt",            no_argument,       0, 'e' },
     { "verbose",            no_argument,       0, 'v' },
     { "version",            no_argument,       0, 'V' },
     { "help",               no_argument,       0, 'h' },
@@ -51,6 +52,7 @@ const char *long_options_descs[] = {
     "use given I2C address (default: " __stringify(OPTIONS_DEFAULT_ADDRESS) ")",
     "use given XML file with memory configuration (no default)",
     "I2C device to use (default: " OPTIONS_DEFAULT_DEVICE ")",
+    "encrypt key write commands (default: no)",
     "switch on verbose output (default: off)",
     "print version and exit",
     "print this usage and exit",
@@ -147,14 +149,17 @@ int find_cmd(const char *command)
     return i;
 }
 
-int write_single_slot(int fd, const char *xmlfile, int slot, struct lca_octet_buffer config)
+int write_single_slot(int fd, const char *xmlfile, int slot, bool encrypt, struct lca_octet_buffer config)
 {
     uint16_t slot_config, key_config;
 
-    lca_get_slot_config(slot, config, &slot_config);
-    lca_get_key_config(slot, config, &key_config);
+    if (!lca_get_slot_config(slot, config, &slot_config))
+        return -1;
 
-    return lca_write_key(fd, slot, xmlfile, slot_config, key_config);
+    if (!lca_get_key_config(slot, config, &key_config))
+        return -2;
+
+    return lca_write_key(fd, slot, encrypt, xmlfile, slot_config, key_config);
 }
 
 /* check whether there is garbage at the string end */
@@ -177,6 +182,7 @@ int main(int argc, char *argv[])
     char *xmlfile = NULL, *device = OPTIONS_DEFAULT_DEVICE;
     int address = OPTIONS_DEFAULT_ADDRESS;
     bool verbose = false;
+    bool encrypt = false;
     int fd = -1;
     int cmd;
 
@@ -195,6 +201,9 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 device = optarg;
+                break;
+            case 'e':
+                encrypt = true;
                 break;
             case 'f':
                 xmlfile = optarg;
@@ -303,7 +312,7 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
-        rv = write_single_slot(fd, xmlfile, slot, config);
+        rv = write_single_slot(fd, xmlfile, slot, encrypt, config);
 
         lca_free_octet_buffer(config);
 
@@ -322,7 +331,7 @@ int main(int argc, char *argv[])
         rv = 0;
 
         for (slot = 0; slot < 15; slot++) {
-            rv |= write_single_slot(fd, xmlfile, slot, config);
+            rv |= write_single_slot(fd, xmlfile, slot, encrypt, config);
         }
 
         lca_free_octet_buffer(config);

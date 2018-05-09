@@ -472,7 +472,7 @@ lca_slot2bin(const char *docname, uint8_t slot, struct lca_octet_buffer *out)
 }
 
 int
-lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config)
+lca_write_key(int fd, const uint8_t key_slot, bool encrypt, const char *config_file, uint16_t slot_config, uint16_t key_config)
 {
   struct lca_octet_buffer data;
   struct lca_octet_buffer key;
@@ -499,13 +499,13 @@ lca_write_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t 
     {
 	  assert((0 == data.ptr[0]) && (0 == data.ptr[1]) && (0 == data.ptr[2]) && (0 == data.ptr[3]));
 
-	  printf("Writing ECC private key to slot %u\n", key_slot);
+	  printf("Writing ECC private key to slot %u [%s]\n", key_slot, encrypt ? "encrypted" : "unencrypted");
 
 	  /* ECC private key */
 	  key.ptr = &data.ptr[4];
 	  key.len = data.len - 4;
 	  write_key.len -= 4;
-	  rc = lca_priv_write_cmd(fd, true, key_slot, key, write_key_slot, write_key) ? 0 : -2;
+	  rc = lca_priv_write_cmd(fd, encrypt, key_slot, key, write_key_slot, write_key) ? 0 : -2;
     }
   else
     {
