@@ -36,10 +36,10 @@ lca_build_otp_zone (void)
     time_t tp;
     struct lca_octet_buffer result = lca_make_buffer(OTP_SIZE);
 
-    assert (time(&tp));
+    time(&tp);
 
-    assert (snprintf(result.ptr, OTP_SIZE, "CRYPTOTRONIX SV: %s, TOL: %s",
-                     PACKAGE_VERSION, ctime(&tp)));
+    snprintf(result.ptr, OTP_SIZE, "CRYPTOTRONIX SV: %s, TOL: %s",
+                     PACKAGE_VERSION, ctime(&tp));
 
     return result;
 }

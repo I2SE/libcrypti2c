@@ -37,10 +37,12 @@ lca_sha256 (FILE *fp)
 
   struct gcry_md_handle *hd;
   struct gcry_md_handle **hd_ptr = &hd;
-
-  assert (GPG_ERR_NO_ERROR == gcry_md_open (hd_ptr, GCRY_MD_SHA256, 0));
-
+  gpg_err_code_t err;
   int c;
+
+  err = gcry_md_open (hd_ptr, GCRY_MD_SHA256, 0);
+
+  assert (GPG_ERR_NO_ERROR == err);
 
   /* Perform the hash */
   while ((c = getc (fp)) != EOF)

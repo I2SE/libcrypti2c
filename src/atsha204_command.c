@@ -466,34 +466,41 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
 }
 
 static bool
-is_otp_read_only_mode (int fd)
+is_otp_read_only_mode (int fd, bool *read_only_out)
 {
   const uint16_t ADDR = 0x0004;
   uint32_t word = 0;
-  assert (read4 (fd, CONFIG_ZONE, ADDR, &word));
-
-  uint8_t * byte = (uint8_t *)&word;
+  uint8_t * byte;
 
   const unsigned int OFFSET_TO_OTP_MODE = 2;
   const unsigned int OTP_READ_ONLY_MODE = 0xAA;
 
-  return OTP_READ_ONLY_MODE == byte[OFFSET_TO_OTP_MODE] ? true : false;
+  if (read4 (fd, CONFIG_ZONE, ADDR, &word) == false)
+    return false;
 
+  byte = (uint8_t *)&word;
 
+  *read_only_out = OTP_READ_ONLY_MODE == byte[OFFSET_TO_OTP_MODE] ? true : false;
+
+  return true;
 }
 
 
 bool
 set_otp_zone (int fd, struct lca_octet_buffer *otp_zone)
 {
+  bool read_only_mode;
 
   assert (NULL != otp_zone);
 
   const unsigned int SIZE_OF_WRITE = 32;
   /* The device must be using an OTP read only mode */
 
-  if (!is_otp_read_only_mode (fd))
-    assert (false);
+  if (!is_otp_read_only_mode (fd, &read_only_mode))
+    return false;
+
+  if (!read_only_mode)
+    return false;
 
   /* The writes must be done in 32 bytes blocks */
 
