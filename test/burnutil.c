@@ -392,16 +392,23 @@ int main(int argc, char *argv[])
             if (i % 4 == 0)
                 printf("\n%04u : ", i);
 
-            if (config.ptr[i] == response.ptr[i])
+            if (config.ptr[i] == response.ptr[i]) {
                 printf("== ");
-            else
+            } else {
                 printf("%02X ", response.ptr[i]);
+
+                if (lca_is_config_offset_writable(i))
+                    rv = -2;
+            }
         }
+
+        printf("\n"); /* FIXME */
+
+        if (rv)
+            fprintf(stderr, "ERROR: Configuration mismatch\n");
 
         lca_free_octet_buffer(config);
         lca_free_octet_buffer(response);
-
-        printf("\n"); /* FIXME */
     }
         break;
 

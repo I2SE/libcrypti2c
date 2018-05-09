@@ -765,6 +765,9 @@ lca_write32_cmd (const int fd,
                   const struct lca_octet_buffer buf,
                   const struct lca_octet_buffer *mac);
 
+bool
+lca_is_config_offset_writable(uint16_t offset);
+
 /**
  * Returns the entire configuration zone.
  *

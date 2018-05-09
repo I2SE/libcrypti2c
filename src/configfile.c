@@ -37,6 +37,18 @@ lca_get_key_type(uint16_t key_config)
 	return (key_config >> 2) & 0x7;
 }
 
+bool
+lca_is_config_offset_writable(uint16_t offset)
+{
+  if (offset < 16)
+    return false;
+
+  if (offset >= 84 && offset <= 87)
+    return false;
+
+  return true;
+}
+
 static struct lca_octet_buffer
 parse_config_zone (xmlDocPtr doc, xmlNodePtr cur) {
 
