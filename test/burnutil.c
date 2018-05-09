@@ -319,6 +319,8 @@ int main(int argc, char *argv[])
             goto idle_out;
         }
 
+        rv = 0;
+
         for (slot = 0; slot < 15; slot++) {
             rv |= write_single_slot(fd, xmlfile, slot, config);
         }
@@ -412,6 +414,9 @@ int main(int argc, char *argv[])
         }
 
         rv = lca_lock_config_zone(fd, config);
+        if (rv) {
+            fprintf(stderr, "ERROR: Locking configuration zone.\n");
+        }
 
         lca_free_octet_buffer(config);
     }
@@ -449,8 +454,6 @@ int main(int argc, char *argv[])
         }
 
         lca_free_octet_buffer(response);
-
-        rv = 0;
 
         printf("\n"); /* FIXME */
 
