@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         switch (c) {
             case 'a':
                 if (safe_strtol(optarg, 0, &address)) {
-                    fprintf(stderr, "Error parsing I2C address '%s'.", optarg);
+                    fprintf(stderr, "ERROR: parsing I2C address '%s'.", optarg);
                     return rv;
                 }
                 break;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 
     /* check if command requires xml file */
     if (!xmlfile && commands[cmd].needs_xmlfile) {
-        fprintf(stderr, "This command requires an XML configuration file, but none given.\n");
+        fprintf(stderr, "ERROR: command requires an XML configuration file, but none given.\n");
         return EXIT_FAILURE;
     }
 
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
     lca_init_and_debug(verbose ? LCA_DEBUG : LCA_INFO);
     fd = lca_atmel_setup(device, address);
     if (fd == -1) {
-        fprintf(stderr, "Error opening '%s': %m\n", device);
+        fprintf(stderr, "ERROR: opening '%s' %m\n", device);
         goto close_out;
     }
 
@@ -291,12 +291,12 @@ int main(int argc, char *argv[])
         int slot;
 
         if (safe_strtol(argv[1], 0, &slot)) {
-            fprintf(stderr, "Error parsing slot parameter.\n");
+            fprintf(stderr, "ERROR: parsing slot parameter.\n");
             goto idle_out;
         }
 
         if (lca_config2bin(xmlfile, &config)) {
-            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
             goto idle_out;
         }
 
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
         int slot;
 
         if (lca_config2bin(xmlfile, &config)) {
-            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
             goto idle_out;
         }
 
@@ -331,12 +331,12 @@ int main(int argc, char *argv[])
         int slot;
 
         if (safe_strtol(argv[1], 0, &slot)) {
-            fprintf(stderr, "Error parsing slot parameter.\n");
+            fprintf(stderr, "ERROR: parsing slot parameter.\n");
             goto idle_out;
         }
 
         if (lca_config2bin(xmlfile, &config)) {
-            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
             goto idle_out;
         }
 
@@ -354,13 +354,13 @@ int main(int argc, char *argv[])
         int i;
 
         if (lca_config2bin(xmlfile, &config)) {
-            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
             goto idle_out;
         }
 
         rv = lca_burn_config_zone(fd, config);
         if (rv) {
-            fprintf(stderr, "Error writing configuration zone.\n");
+            fprintf(stderr, "ERROR: writing configuration zone.\n");
             lca_free_octet_buffer(config);
             goto idle_out;
         }
@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 
         response = get_config_zone(fd);
         if (response.ptr == NULL) {
-            fprintf(stderr, "Unable to get configuration.\n");
+            fprintf(stderr, "ERROR: Unable to get configuration.\n");
             lca_free_octet_buffer(config);
             goto idle_out;
         }
@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
         struct lca_octet_buffer config;
 
         if (lca_config2bin(xmlfile, &config)) {
-            fprintf(stderr, "Error parsing XML configuration zone.\n");
+            fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
             goto idle_out;
         }
 
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
 
         rv = personalize(fd, xmlfile);
         if (rv) {
-            fprintf(stderr, "Failed to personalize the device.\n");
+            fprintf(stderr, "ERROR: Failed to personalize the device.\n");
             goto idle_out;
         }
 
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 
         response = get_otp_zone (fd);
         if (response.ptr == NULL) {
-            fprintf(stderr, "Failed to get OTP zone.\n");
+            fprintf(stderr, "ERROR: Failed to get OTP zone.\n");
             goto idle_out;
         }
 

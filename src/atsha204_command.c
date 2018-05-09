@@ -62,7 +62,7 @@ lca_get_random (int fd, bool update_seed)
     }
   else
     {
-      LCA_LOG (LCA_INFO, "Random command failed");
+      LCA_LOG (LCA_INFO, "ERROR: Random command failed");
       free (random_buf);
     }
 
@@ -110,7 +110,7 @@ read4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t *buf)
     }
   else
     {
-	  LCA_LOG (LCA_INFO, "Read 4 failure");
+	  LCA_LOG (LCA_INFO, "ERROR: Read 4 failure");
     }
 
   return result;
@@ -151,7 +151,7 @@ read32 (int fd, enum DATA_ZONE zone, uint16_t addr)
 
   if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, LENGTH_OF_RESPONSE))
     {
-	  LCA_LOG (LCA_INFO, "Read 32 failure");
+	  LCA_LOG (LCA_INFO, "ERROR: Read 32 failure");
       lca_free_wipe (buf.ptr, LENGTH_OF_RESPONSE);
       buf.ptr = NULL;
       buf.len = 0;
@@ -199,7 +199,7 @@ write4 (int fd, enum DATA_ZONE zone, uint16_t addr, uint32_t buf)
   }
   else
   {
-	LCA_LOG (LCA_INFO, "Write 4 failure");
+	LCA_LOG (LCA_INFO, "ERROR: Write 4 failure");
   }
 
   return status;
@@ -276,7 +276,7 @@ lca_write32_cmd (const int fd,
   }
   else
   {
-    LCA_LOG (LCA_INFO, "Write 32 failure");
+    LCA_LOG (LCA_INFO, "ERROR: Write 32 failure");
   }
 
   if (NULL != c.data)
@@ -456,7 +456,7 @@ lock (int fd, enum DATA_ZONE zone, uint16_t crc)
         }
       else
         {
-          LCA_LOG (LCA_INFO, "Lock Failed");
+          LCA_LOG (LCA_INFO, "ERROR: Lock Failed");
         }
     }
 
@@ -657,7 +657,7 @@ lca_gen_nonce (int fd, struct lca_octet_buffer data)
 
   if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, buf.len))
     {
-      LCA_LOG (LCA_INFO, "Nonce command failed");
+      LCA_LOG (LCA_INFO, "ERROR: Nonce command failed");
       lca_free_octet_buffer (buf);
       buf.ptr = NULL;
     }
@@ -762,7 +762,7 @@ lca_gen_digest (int fd, const enum DATA_ZONE zone, uint16_t key_id, struct lca_o
     }
   else
     {
-      LCA_LOG (LCA_INFO, "GenDig failure");
+      LCA_LOG (LCA_INFO, "ERROR: GenDig failure");
     }
 
   if (NULL != c.data)
@@ -799,7 +799,7 @@ lca_gen_mac(const int fd,
 
   if (RSP_SUCCESS != lca_process_command (fd, &c, buf.ptr, buf.len))
     {
-	  LCA_LOG (LCA_INFO, "MAC failure");
+	  LCA_LOG (LCA_INFO, "ERROR: MAC failure");
 	  lca_free_octet_buffer (buf);
 	  buf.ptr = NULL;
     }
