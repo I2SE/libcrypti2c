@@ -635,14 +635,12 @@ lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
     	  continue;
         }
 
-      for (retry = 0; retry < 3; retry++)
+      if (write4 (fd, CONFIG_ZONE, addr, *data))
         {
-          if (write4 (fd, CONFIG_ZONE, addr, *data))
-            {
-              printf ("Write %02X %02X %02X %02X to %u success\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
-              break;
-            }
-
+          printf ("Write %02X %02X %02X %02X to %u success\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+        }
+      else
+        {
           printf ("Write %02X %02X %02X %02X to %u Failure\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
         }
 

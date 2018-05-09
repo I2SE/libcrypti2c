@@ -109,30 +109,37 @@ lca_send_and_receive (int fd,
 {
 #ifndef USE_KERNEL
   struct timespec tim_rem;
-  enum LCA_STATUS_RESPONSE rsp = RSP_COMM_ERROR;
+  enum LCA_STATUS_RESPONSE rsp;
   ssize_t result = 0;
+  unsigned int x;
 
   assert (NULL != send_buf);
   assert (NULL != recv_buf);
   assert (NULL != wait_time);
 
-  lca_print_hex_string ("Sending", send_buf, send_buf_len);
-
-  result = lca_write (fd, send_buf, send_buf_len);
-
-  if (result > 1)
+  for (x=0; x < 3; x++)
     {
-      while ((nanosleep(wait_time, &tim_rem) == (-1)) && (errno == EINTR))
-        {
-          *wait_time = tim_rem;
-        }
+	  lca_print_hex_string ("Sending", send_buf, send_buf_len);
 
-      rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len);
-      LCA_LOG (LCA_DEBUG, "Command Response: %s", status_to_string (rsp));
-    }
-  else
-    {
-      LCA_LOG (LCA_DEBUG, "Write failed: %d\n", result);
+	  result = lca_write (fd, send_buf, send_buf_len);
+
+	  if (result > 1)
+	    {
+	      while ((nanosleep(wait_time, &tim_rem) == (-1)) && (errno == EINTR))
+	        {
+	          *wait_time = tim_rem;
+	        }
+
+	      rsp = lca_read_and_validate (fd, recv_buf, recv_buf_len);
+	      LCA_LOG (LCA_DEBUG, "Command Response: %s", status_to_string (rsp));
+
+	      if (rsp == RSP_SUCCESS)
+	        break;
+	    }
+	  else
+	    {
+	      LCA_LOG (LCA_DEBUG, "Write failed: %d\n", result);
+	    }
     }
 
 #else
