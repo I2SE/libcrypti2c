@@ -608,6 +608,7 @@ int
 lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
 {
   bool config_locked = false;
+  int rc = 0;
 
   if (lca_is_config_locked (fd, &config_locked))
     {
@@ -642,11 +643,12 @@ lca_burn_config_zone (int fd, struct lca_octet_buffer cz)
       else
         {
           printf ("Write %02X %02X %02X %02X to %u Failure\n", cz.ptr[x+0], cz.ptr[x+1], cz.ptr[x+2], cz.ptr[x+3], x);
+          rc = -1;
         }
 
     }
 
-  return 0;
+  return rc;
 
 }
 
