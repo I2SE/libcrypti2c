@@ -277,6 +277,9 @@ int main(int argc, char *argv[])
             case STATE_PERSONALIZED:
                 printf("PERSONALIZED\n");
                 break;
+            case STATE_INVALID:
+            	printf("INVALID\n");
+            	break;
             default:
                 printf("UNKNOWN\n");
                 break;

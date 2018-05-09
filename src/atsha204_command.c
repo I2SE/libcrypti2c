@@ -609,7 +609,7 @@ lca_get_device_state (int fd)
   else if (config_locked && data_locked)
     state = STATE_PERSONALIZED;
   else
-    state = STATE_UNKNOWN;
+    state = STATE_INVALID;
 
   return state;
 

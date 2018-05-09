@@ -866,7 +866,10 @@ enum DEVICE_STATE
                                      are unlocked */
     STATE_INITIALIZED,            /**< Config zone locked, data and OTP
                                      zones are unlockded */
-    STATE_PERSONALIZED            /**< Config, data, and OTP zones are locked */
+    STATE_PERSONALIZED,           /**< Config, data, and OTP zones are locked */
+
+	STATE_INVALID,                /**< Config zone unlocked,
+	                                 but data and OTP are locked */
   };
 
 /**
