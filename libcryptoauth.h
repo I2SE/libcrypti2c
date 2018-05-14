@@ -978,7 +978,7 @@ int
 lca_write_key(int fd, const uint8_t key_slot, bool encrypt, const char *config_file, uint16_t slot_config, uint16_t key_config);
 
 int
-lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config);
+lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config, struct lca_octet_buffer other_data);
 
 /* Configuration Zone Functions */
 bool

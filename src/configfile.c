@@ -495,7 +495,7 @@ lca_write_key(int fd, const uint8_t key_slot, bool encrypt, const char *config_f
   if ((data.len == 36) &&
       (slot_config & (1 << 14)) &&
       (key_config & (1 << 0)) &&
-	  (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
+      (lca_get_key_type(key_config) != LCA_NO_ECC_TYPE))
     {
 	  assert((0 == data.ptr[0]) && (0 == data.ptr[1]) && (0 == data.ptr[2]) && (0 == data.ptr[3]));
 
@@ -552,7 +552,7 @@ lca_write_key(int fd, const uint8_t key_slot, bool encrypt, const char *config_f
 }
 
 int
-lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config)
+lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t slot_config, uint16_t key_config, struct lca_octet_buffer other_data)
 {
   struct lca_octet_buffer otp8 = lca_make_buffer (8);
   struct lca_octet_buffer otp3 = lca_make_buffer (3);
@@ -573,13 +573,14 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
 
   if ((data.len <= 36) &&
       ((key_config & (1 << 0)) == 0) &&
-  	  (lca_get_key_type(key_config) == LCA_NO_ECC_TYPE))
+      (lca_get_key_type(key_config) == LCA_NO_ECC_TYPE))
   {
     struct lca_octet_buffer digest_device;
     struct lca_octet_buffer digest_host;
     struct lca_octet_buffer key;
     struct lca_octet_buffer rsp;
 
+    /* Secret data */
     key.ptr = &data.ptr[0];
     key.len = 32;
 
@@ -611,6 +612,46 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
 
     lca_free_octet_buffer(digest_host);
   }
+  else if ((slot_config & (1 << 7)) &&
+           (key_config & (1 << 0)) &&
+           (lca_get_key_type(key_config) == LCA_P256_NIST_ECC_TYPE) &&
+           (other_data.len == 65)) // Matching public key
+  {
+    struct lca_octet_buffer signature;
+    struct lca_octet_buffer rand;
+    struct lca_octet_buffer digest;
+    struct lca_octet_buffer rsp;
+
+    /* ECC Private key */
+
+    /* Generate random data */
+    rand = lca_make_random_buffer(32);
+
+    /* Generate digest of random data */
+    digest = lca_sha256_buffer(rand);
+
+    /* Store digest via Nonce into TempKey of crypto chip */
+    rsp = lca_gen_nonce (fd, digest);
+    if (rsp.ptr)
+      lca_free_octet_buffer(rsp);
+
+    /* Generate signature on crypto chip */
+    signature = lca_ecc_sign (fd, key_slot);
+    if (NULL == signature.ptr)
+      {
+        rc = -2;
+        lca_free_octet_buffer(digest);
+        lca_free_octet_buffer(rand);
+        goto OUT_DATA;
+      }
+
+    /* Verify digest with signature and public key on host */
+    rc = lca_ecdsa_p256_verify(other_data, signature, digest) ? 0 : -3;
+
+    lca_free_octet_buffer(signature);
+    lca_free_octet_buffer(digest);
+    lca_free_octet_buffer(rand);
+  }
   else if ((key_config & (3 << 6)) == 0)
   {
     struct lca_octet_buffer block;
@@ -618,24 +659,24 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
     bool result;
     size_t i, len;
 
+    /* Public data */
     rc = 0;
 
     for (i = 0; i < data.len; )
       {
-    	addr = data_slot_to_addr(key_slot, i);
-    	block = read32 (fd, DATA_ZONE, addr);
+        addr = data_slot_to_addr(key_slot, i);
+        block = read32 (fd, DATA_ZONE, addr);
 
-    	if (block.len == 0)
+        if (block.len == 0)
           {
             rc = -2;
             break;
           }
 
-    	len = (data.len - i) > block.len ? block.len : (data.len - i);
+        len = (data.len - i) > block.len ? block.len : (data.len - i);
         if (memcmp(&block.ptr[0], &data.ptr[i], len))
           {
             rc = -3;
-            break;
           }
 
         i += len;
@@ -644,6 +685,7 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
       }
   }
 
+OUT_DATA:
   lca_free_octet_buffer(data);
 
 OUT:

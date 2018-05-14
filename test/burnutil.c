@@ -41,6 +41,7 @@ const struct option long_options[] = {
     { "file",               required_argument, 0, 'f' },
     { "device",             required_argument, 0, 'd' },
     { "encrypt",            no_argument,       0, 'e' },
+	{ "public-key",         required_argument, 0, 'p' },
     { "verbose",            no_argument,       0, 'v' },
     { "version",            no_argument,       0, 'V' },
     { "help",               no_argument,       0, 'h' },
@@ -53,6 +54,7 @@ const char *long_options_descs[] = {
     "use given XML file with memory configuration (no default)",
     "I2C device to use (default: " OPTIONS_DEFAULT_DEVICE ")",
     "encrypt key write commands (default: no)",
+	"public key with uncompressed point tag (default: none)",
     "switch on verbose output (default: off)",
     "print version and exit",
     "print this usage and exit",
@@ -180,6 +182,7 @@ int main(int argc, char *argv[])
 {
     int rv = EXIT_FAILURE;
     char *xmlfile = NULL, *device = OPTIONS_DEFAULT_DEVICE;
+    char *public_key = NULL;
     int address = OPTIONS_DEFAULT_ADDRESS;
     bool verbose = false;
     bool encrypt = false;
@@ -207,6 +210,9 @@ int main(int argc, char *argv[])
                 break;
             case 'f':
                 xmlfile = optarg;
+                break;
+            case 'p':
+                public_key = optarg;
                 break;
             case 'v':
                 verbose = true;
@@ -241,6 +247,13 @@ int main(int argc, char *argv[])
     if (!xmlfile && commands[cmd].needs_xmlfile) {
         fprintf(stderr, "ERROR: command requires an XML configuration file, but none given.\n");
         return EXIT_FAILURE;
+    }
+
+    if (public_key) {
+        if (strlen(public_key) != 130) {
+            fprintf(stderr, "ERROR: ECC public key has invalid length\n");
+            return EXIT_FAILURE;
+        }
     }
 
     /* init library and open device */
@@ -341,8 +354,19 @@ int main(int argc, char *argv[])
 
     case CMD_VERIFY_KEY: {
         struct lca_octet_buffer config;
+        struct lca_octet_buffer pub_key = { 0, 0 };
         uint16_t slot_config, key_config;
-        int slot;
+        int slot, i;
+        char *pos = public_key;
+
+        if (public_key) {
+            pub_key = lca_make_buffer (65);
+
+            for (i = 0; i < pub_key.len; i++) {
+                sscanf(pos, "%2hhx", &pub_key.ptr[i]);
+                pos += 2;
+            }
+        }
 
         if (safe_strtol(argv[1], 0, &slot)) {
             fprintf(stderr, "ERROR: parsing slot parameter.\n");
@@ -357,7 +381,7 @@ int main(int argc, char *argv[])
         lca_get_slot_config(slot, config, &slot_config);
         lca_get_key_config(slot, config, &key_config);
 
-        rv = lca_verify_key(fd, slot, xmlfile, slot_config, key_config);
+        rv = lca_verify_key(fd, slot, xmlfile, slot_config, key_config, pub_key);
         printf(rv ? "FAILED\n" : "OK\n");
         lca_free_octet_buffer(config);
     }
