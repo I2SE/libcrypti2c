@@ -559,11 +559,7 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
   struct lca_octet_buffer sn4 = lca_make_buffer (4);
   struct lca_octet_buffer sn23 = lca_make_buffer (2);
   struct lca_octet_buffer rand = lca_make_random_buffer (32);
-  struct lca_octet_buffer digest_host;
-  struct lca_octet_buffer digest_device;
   struct lca_octet_buffer data;
-  struct lca_octet_buffer key;
-  struct lca_octet_buffer rsp;
   int rc = -3;
 
   if (lca_slot2bin(config_file, key_slot, &data))
@@ -575,35 +571,79 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
   assert (data.ptr);
   assert (data.len >= 32);
 
-  key.ptr = &data.ptr[0];
-  key.len = 32;
+  if ((data.len <= 36) &&
+      ((key_config & (1 << 0)) == 0) &&
+  	  (lca_get_key_type(key_config) == LCA_NO_ECC_TYPE))
+  {
+    struct lca_octet_buffer digest_device;
+    struct lca_octet_buffer digest_host;
+    struct lca_octet_buffer key;
+    struct lca_octet_buffer rsp;
 
-  digest_host = perform_hash(rand, key, 0x05, key_slot, otp8, otp3, sn4, sn23);
+    key.ptr = &data.ptr[0];
+    key.len = 32;
 
-  rsp = lca_gen_nonce (fd, rand);
+    digest_host = perform_hash(rand, key, 0x05, key_slot, otp8, otp3, sn4, sn23);
 
-  digest_device = lca_gen_mac(fd, 0x05, key_slot, NULL);
+    rsp = lca_gen_nonce (fd, rand);
+	if (rsp.ptr)
+      lca_free_octet_buffer(rsp);
 
-  if (digest_device.ptr)
-    {
-	  if (memcmp(digest_host.ptr, digest_device.ptr, digest_host.len))
-	    {
-		  rc = -2;
-	    }
-	  else
-	    {
-		  rc = 0;
-	    }
+	digest_device = lca_gen_mac(fd, 0x05, key_slot, NULL);
 
-	  lca_free_octet_buffer(digest_device);
-    }
-  else
-    {
-	  rc = -1;
-    }
+	if (digest_device.ptr)
+	  {
+		if (memcmp(digest_host.ptr, digest_device.ptr, digest_host.len))
+          {
+            rc = -2;
+          }
+        else
+          {
+            rc = 0;
+          }
 
-  lca_free_octet_buffer(rsp);
-  lca_free_octet_buffer(digest_host);
+        lca_free_octet_buffer(digest_device);
+      }
+    else
+      {
+        rc = -1;
+      }
+
+    lca_free_octet_buffer(digest_host);
+  }
+  else if ((key_config & (3 << 6)) == 0)
+  {
+    struct lca_octet_buffer block;
+    uint16_t addr;
+    bool result;
+    size_t i, len;
+
+    rc = 0;
+
+    for (i = 0; i < data.len; )
+      {
+    	addr = data_slot_to_addr(key_slot, i);
+    	block = read32 (fd, DATA_ZONE, addr);
+
+    	if (block.len == 0)
+          {
+            rc = -2;
+            break;
+          }
+
+    	len = (data.len - i) > block.len ? block.len : (data.len - i);
+        if (memcmp(&block.ptr[0], &data.ptr[i], len))
+          {
+            rc = -3;
+            break;
+          }
+
+        i += len;
+
+        lca_free_octet_buffer(block);
+      }
+  }
+
   lca_free_octet_buffer(data);
 
 OUT:
