@@ -247,6 +247,8 @@ lca_build_write32_cmd (const enum DATA_ZONE zone,
                    data.ptr, data.len,
                    0, WRITE_MAX_EXEC);
 
+  lca_free_octet_buffer (data);
+
   return c;
 
 }
