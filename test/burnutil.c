@@ -370,11 +370,13 @@ int main(int argc, char *argv[])
 
         if (safe_strtol(argv[1], 0, &slot)) {
             fprintf(stderr, "ERROR: parsing slot parameter.\n");
+            lca_free_octet_buffer(pub_key);
             goto idle_out;
         }
 
         if (lca_config2bin(xmlfile, &config)) {
             fprintf(stderr, "ERROR: parsing XML configuration zone.\n");
+            lca_free_octet_buffer(pub_key);
             goto idle_out;
         }
 
@@ -382,8 +384,11 @@ int main(int argc, char *argv[])
         lca_get_key_config(slot, config, &key_config);
 
         rv = lca_verify_key(fd, slot, xmlfile, slot_config, key_config, pub_key);
+
         printf(rv ? "FAILED\n" : "OK\n");
+
         lca_free_octet_buffer(config);
+        lca_free_octet_buffer(pub_key);
     }
         break;
 
