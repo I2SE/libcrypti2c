@@ -233,6 +233,9 @@ lca_ecdh (int fd, uint8_t slot,
       shared_secret.ptr = NULL;
     }
 
+  if (NULL != c.data)
+    free (c.data);
+
   lca_free_octet_buffer (data);
 
   return shared_secret;
