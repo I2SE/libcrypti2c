@@ -571,8 +571,7 @@ lca_verify_key(int fd, const uint8_t key_slot, const char *config_file, uint16_t
   assert (data.ptr);
   assert (data.len >= 32);
 
-  if ((data.len <= 36) &&
-      ((key_config & (1 << 0)) == 0) &&
+  if (((key_config & (1 << 0)) == 0) &&
       (lca_get_key_type(key_config) == LCA_NO_ECC_TYPE))
   {
     struct lca_octet_buffer digest_device;
