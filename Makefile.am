@@ -22,11 +22,13 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 ## Define the Data dir so we know where our data files are
 AM_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
+#AM_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -mapcs-frame -rdynamic -funwind-tables
 
 ## Additional flags to pass to aclocal when it is invoked automatically at
 ## make time. The ${ACLOCAL_FLAGS} variable is picked up from the environment
 ## to provide a way for the user to supply additional arguments.
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+
 
 libcryptoauth_la_CPPFLAGS = $(XML_CFLAGS) $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 libcryptoauth_la_LIBADD = $(XML_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)

@@ -25,8 +25,28 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
+// #include <execinfo.h>
 #include "util.h"
 #include "../libcryptoauth.h"
+
+/*
+void print_stacktrace()
+{
+  void *buffer[50];
+  size_t size;
+  char **strings;
+  size_t i;
+
+  size = backtrace(buffer, 50);
+  strings = backtrace_symbols(buffer, size);
+
+  printf("Obtained %zd stack frames.\n", size);
+  for (i = 0; i < size; i++)
+     printf("%s\n", strings[i]);
+
+  free(strings);
+}
+*/
 
 void
 lca_wipe(unsigned char *buf, unsigned int len)
