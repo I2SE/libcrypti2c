@@ -751,7 +751,9 @@ lca_lock_config_zone (int fd, const struct lca_octet_buffer template)
 
   struct lca_octet_buffer read_cz = get_config_zone (fd);
 
-  assert (read_cz.ptr);
+  if (NULL == read_cz.ptr)
+    return -1;
+
   assert (template.ptr);
   assert (read_cz.len == 128);
   assert (template.len == 128);
