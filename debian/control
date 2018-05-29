@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/cryptotronix/libcrypti2c
 Package: libcryptoauth-dev
 Section: libdevel
 Architecture: any
-Depends: libcryptoauth0 (= ${binary:Version}), ${misc:Depends}
+Depends: libcryptoauth0 (= ${binary:Version}), libgpg-error-dev, ${misc:Depends}
 Description: Library for Atmel CryptoAuthentication Devices
  Development library for Atmel's CryptoAutentication Devices, ATECC108 and ATSHA204
 
