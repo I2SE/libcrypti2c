@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     int cmd;
 
     while (1) {
-        int c = getopt_long(argc, argv, "a:d:f:p:vVh", long_options, NULL);
+        int c = getopt_long(argc, argv, "a:d:ef:p:vVh", long_options, NULL);
 
         /* detect the end of the options */
         if (c == -1) break;
