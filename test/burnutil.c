@@ -184,6 +184,7 @@ int main(int argc, char *argv[])
     char *xmlfile = NULL, *device = OPTIONS_DEFAULT_DEVICE;
     char *public_key = NULL;
     int address = OPTIONS_DEFAULT_ADDRESS;
+    struct timespec wait_time, tim_rem;
     bool verbose = false;
     bool encrypt = false;
     int fd = -1;
@@ -419,7 +420,11 @@ int main(int argc, char *argv[])
         lca_idle(fd);
 
         /* we need to wait until we can read back correct data */
-        sleep(1);
+        wait_time.tv_sec = 2;
+        wait_time.tv_nsec = 0;
+
+        while ((nanosleep(&wait_time, &tim_rem) == (-1)) && (errno == EINTR))
+            wait_time = tim_rem;
 
         lca_wakeup(fd);
 
@@ -496,7 +501,13 @@ int main(int argc, char *argv[])
         }
 
         lca_idle(fd);
-        sleep (1);
+
+        wait_time.tv_sec = 2;
+        wait_time.tv_nsec = 0;
+
+        while ((nanosleep(&wait_time, &tim_rem) == (-1)) && (errno == EINTR))
+            wait_time = tim_rem;
+
         lca_wakeup(fd);
 
         printf("\n"); /* FIXME */
