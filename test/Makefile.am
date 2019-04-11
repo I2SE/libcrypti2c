@@ -14,23 +14,26 @@
 
 # You should have received a copy of the GNU Lesser General Public License
 # along with libcryptoauth.  If not, see <http://www.gnu.org/licenses/>.
+
+AM_CPPFLAGS = -I $(top_srcdir)
+
 TESTS = check_libcryptoauth
 check_PROGRAMS = check_libcryptoauth csu ecdh
 check_libcryptoauth_SOURCES = tester.c test_hmac.c \
-			      $(top_builddir)/libcryptoauth.h \
+			      $(top_srcdir)/libcryptoauth.h \
                               test_hmac.h test_xml.c
 check_libcryptoauth_CFLAGS = @CHECK_CFLAGS@ $(XML_CFLAGS)
 check_libcryptoauth_LDADD = ../libcryptoauth.la @CHECK_LIBS@ \
                             $(XML_LIBS) $(LIBGCRYPT_LIBS) \
                             -lgpg-error
 
-csu_SOURCES = csu.c $(top_builddir)/libcryptoauth.h
+csu_SOURCES = csu.c $(top_srcdir)/libcryptoauth.h
 csu_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
 
 bin_PROGRAMS = burnutil
 
-burnutil_SOURCES = burnutil.c $(top_builddir)/libcryptoauth.h
+burnutil_SOURCES = burnutil.c $(top_srcdir)/libcryptoauth.h
 burnutil_LDADD = ../libcryptoauth.la
 
-ecdh_SOURCES = ecdh.c $(top_builddir)/libcryptoauth.h
+ecdh_SOURCES = ecdh.c $(top_srcdir)/libcryptoauth.h
 ecdh_LDADD = ../libcryptoauth.la $(LIBGCRYPT_LIBS)
